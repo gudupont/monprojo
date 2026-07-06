@@ -12,7 +12,12 @@ node_modules/
 dist/
 build/
 out/
+.next/
 *.tsbuildinfo
+
+# Local SQLite database
+*.db
+*.db-journal
 
 # Logs
 *.log
@@ -37,3 +42,5 @@ Thumbs.db
 *.swp
 .idea/
 .vscode/
+
+/src/generated/prisma

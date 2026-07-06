@@ -1,0 +1,51 @@
+"use server";
+
+import { db } from "@/lib/db";
+import { getMediaDetail, type TmdbMediaType } from "@/lib/tmdb";
+import { getImdbRating } from "@/lib/omdb";
+
+const CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24h
+
+export async function getOrRefreshMedia(tmdbId: number, type: TmdbMediaType) {
+  const existing = await db.media.findUnique({ where: { tmdbId } });
+  const isFresh = existing && Date.now() - existing.cachedAt.getTime() < CACHE_TTL_MS;
+  if (isFresh) {
+    return existing;
+  }
+
+  const detail = await getMediaDetail(tmdbId, type);
+
+  let imdbRating: number | null = null;
+  if (detail.imdbId) {
+    try {
+      imdbRating = await getImdbRating(detail.imdbId);
+    } catch {
+      imdbRating = null;
+    }
+  }
+
+  return db.media.upsert({
+    where: { tmdbId },
+    create: {
+      tmdbId: detail.tmdbId,
+      imdbId: detail.imdbId,
+      type: detail.type === "movie" ? "MOVIE" : "TV",
+      title: detail.title,
+      poster: detail.poster,
+      overview: detail.overview,
+      releaseDate: detail.releaseDate,
+      tmdbRating: detail.tmdbRating,
+      imdbRating,
+    },
+    update: {
+      imdbId: detail.imdbId,
+      title: detail.title,
+      poster: detail.poster,
+      overview: detail.overview,
+      releaseDate: detail.releaseDate,
+      tmdbRating: detail.tmdbRating,
+      imdbRating,
+      cachedAt: new Date(),
+    },
+  });
+}

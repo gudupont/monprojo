@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id          String          @id @default(cuid())
+  name        String
+  avatarColor String
+  createdAt   DateTime        @default(now())
+  watchlist   WatchlistItem[]
+  planEntries PlanEntry[]
+}
+
+enum MediaType {
+  MOVIE
+  TV
+}
+
+model Media {
+  id          String          @id @default(cuid())
+  tmdbId      Int             @unique
+  imdbId      String?
+  type        MediaType
+  title       String
+  poster      String?
+  overview    String?
+  releaseDate String?
+  tmdbRating  Float?
+  imdbRating  Float?
+  cachedAt    DateTime        @default(now())
+  watchlist   WatchlistItem[]
+  planEntries PlanEntry[]
+}
+
+enum WatchStatus {
+  TO_WATCH
+  WATCHING
+  WATCHED
+}
+
+model WatchlistItem {
+  id        String      @id @default(cuid())
+  mediaId   String
+  profileId String
+  status    WatchStatus @default(TO_WATCH)
+  addedAt   DateTime    @default(now())
+
+  media   Media   @relation(fields: [mediaId], references: [id])
+  profile Profile @relation(fields: [profileId], references: [id])
+
+  @@unique([mediaId, profileId])
+}
+
+model PlanEntry {
+  id                 String   @id @default(cuid())
+  mediaId            String
+  scheduledAt        DateTime
+  createdByProfileId String
+  notes              String?
+  createdAt          DateTime @default(now())
+
+  media            Media   @relation(fields: [mediaId], references: [id])
+  createdByProfile Profile @relation(fields: [createdByProfileId], references: [id])
+}
