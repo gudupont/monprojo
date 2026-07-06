@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Search } from "lucide-react";
 import { searchMedia } from "@/lib/tmdb";
 import { MediaCard } from "@/components/media-card";
+import { SearchAutocomplete } from "@/components/search-autocomplete";
 
 const TYPE_TABS = [
   { key: "tout", label: "Tout" },
@@ -27,20 +27,11 @@ export default async function SearchPage({
     <div className="px-4 pt-5 md:px-10 md:pt-0">
       <div className="mb-4 md:mb-6">
         <h1 className="mb-5 font-heading text-[30px] text-mp-text md:text-[38px]">Recherche</h1>
-        <form className="flex items-center gap-2.5 rounded-xl border border-mp-border bg-mp-surface px-4 py-3">
-          <Search size={18} strokeWidth={1.8} className="shrink-0 text-mp-text-dim" />
-          <input
-            type="hidden"
-            name="type"
-            value={activeType === "tout" ? "" : activeType}
-          />
-          <input
-            name="q"
-            defaultValue={q}
-            placeholder="Un titre, une série…"
-            className="flex-1 bg-transparent text-[15px] text-mp-text outline-none placeholder:text-mp-text-dim"
-          />
-        </form>
+        <SearchAutocomplete
+          variant="page"
+          initialQuery={q}
+          initialType={activeType}
+        />
       </div>
 
       <div className="mb-6 flex gap-2">

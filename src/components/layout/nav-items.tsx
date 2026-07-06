@@ -7,3 +7,5 @@ export const NAV_ITEMS = [
   { href: "/calendar", label: "Calendrier", icon: Calendar },
   { href: "/decide", label: "Décider", icon: Dices },
 ] as const;
+
+export const SEARCH_VISIBLE_PATHS = ["/", "/watchlist", "/calendar"] as const;

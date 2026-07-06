@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS } from "@/components/layout/nav-items";
+import { NAV_ITEMS, SEARCH_VISIBLE_PATHS } from "@/components/layout/nav-items";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SearchAutocomplete } from "@/components/search-autocomplete";
 
 interface SidebarProps {
   watchlistCount: number;
@@ -24,6 +25,10 @@ export function Sidebar({ watchlistCount, profileName, profileColor }: SidebarPr
         </div>
         <span className="font-heading text-xl italic text-mp-text">MonProjo</span>
       </div>
+
+      {SEARCH_VISIBLE_PATHS.includes(pathname as (typeof SEARCH_VISIBLE_PATHS)[number]) && (
+        <SearchAutocomplete variant="header" />
+      )}
 
       <nav className="flex flex-col gap-1">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {

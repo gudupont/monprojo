@@ -3,7 +3,29 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { getActiveProfile } from "@/lib/session";
+import { getOrRefreshMedia } from "@/lib/actions/media";
+import type { TmdbMediaType } from "@/lib/tmdb";
 import type { WatchStatus } from "@prisma/client";
+
+export type QuickAddResult =
+  | { status: "added" }
+  | { status: "already-in-watchlist" }
+  | { status: "error"; message: string };
+
+export async function quickAddToWatchlist(tmdbId: number, type: TmdbMediaType): Promise<QuickAddResult> {
+  const profile = await getActiveProfile();
+  if (!profile) return { status: "error", message: "Aucun profil actif" };
+
+  const media = await getOrRefreshMedia(tmdbId, type);
+
+  const existing = await db.watchlistItem.findUnique({
+    where: { mediaId_profileId: { mediaId: media.id, profileId: profile.id } },
+  });
+
+  await addToWatchlist(media.id);
+
+  return existing ? { status: "already-in-watchlist" } : { status: "added" };
+}
 
 export async function addToWatchlist(mediaId: string) {
   const profile = await getActiveProfile();

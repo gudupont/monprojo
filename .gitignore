@@ -10,6 +10,7 @@ node_modules/
 
 # Build output
 dist/
+openspec/
 build/
 out/
 .next/
@@ -43,5 +44,6 @@ Thumbs.db
 .idea/
 .vscode/
 .playwright-mcp/
+TASKS.md
 
 /src/generated/prisma
