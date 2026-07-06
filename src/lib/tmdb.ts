@@ -18,6 +18,11 @@ export interface TmdbSeasonSummary {
   episodeCount: number;
 }
 
+export interface TmdbEpisodeSummary {
+  episode: number;
+  title: string;
+}
+
 export interface TmdbMediaDetail extends TmdbSearchResult {
   imdbId: string | null;
   cast: string[];
@@ -114,4 +119,13 @@ export async function getMediaDetail(tmdbId: number, type: TmdbMediaType): Promi
             .map((s) => ({ season: s.season_number, episodeCount: s.episode_count }))
         : null,
   };
+}
+
+interface TmdbSeasonDetailResponse {
+  episodes?: { episode_number: number; name: string }[];
+}
+
+export async function getSeasonEpisodes(tmdbId: number, season: number): Promise<TmdbEpisodeSummary[]> {
+  const data = await tmdbFetch<TmdbSeasonDetailResponse>(`/tv/${tmdbId}/season/${season}`);
+  return (data.episodes ?? []).map((e) => ({ episode: e.episode_number, title: e.name }));
 }

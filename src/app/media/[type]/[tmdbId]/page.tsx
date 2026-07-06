@@ -1,13 +1,14 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Bookmark, Check } from "lucide-react";
-import { getMediaDetail } from "@/lib/tmdb";
+import { getMediaDetail, getSeasonEpisodes, type TmdbEpisodeSummary } from "@/lib/tmdb";
 import { getOrRefreshMedia } from "@/lib/actions/media";
 import { toggleWatchlist, toggleMovieWatched } from "@/lib/actions/watchlist";
-import { toggleEpisodeWatched } from "@/lib/actions/episode";
+import { toggleEpisodeWatched, markSeasonWatched, unmarkSeasonWatched } from "@/lib/actions/episode";
 import { getActiveProfile } from "@/lib/session";
 import { db } from "@/lib/db";
 import { parseSeasons, parseGenres } from "@/lib/progress";
+import { computeProgressPercent } from "@/lib/media-progress";
 import { Button } from "@/components/ui/button";
 import { PlanDialog } from "@/components/plan-dialog";
 import { BackLink } from "@/components/back-link";
@@ -47,6 +48,29 @@ export default async function MediaDetailPage({
       ? await db.episodeWatch.findMany({ where: { mediaId: media.id, profileId: profile.id } })
       : [];
   const watchedSet = new Set(episodeWatches.map((e) => `${e.season}-${e.episode}`));
+
+  let episodeTitles: TmdbEpisodeSummary[] = [];
+  if (type === "tv" && activeSeason) {
+    try {
+      episodeTitles = await getSeasonEpisodes(tmdbIdNumber, activeSeason.season);
+    } catch {
+      episodeTitles = [];
+    }
+  }
+  const titleByEpisode = new Map(episodeTitles.map((e) => [e.episode, e.title]));
+
+  const seasonWatchedCount = activeSeason
+    ? episodeWatches.filter((e) => e.season === activeSeason.season).length
+    : 0;
+  const seasonPercent = activeSeason && activeSeason.episodeCount > 0
+    ? Math.round((seasonWatchedCount / activeSeason.episodeCount) * 100)
+    : 0;
+  const seasonFullyWatched = activeSeason ? seasonWatchedCount >= activeSeason.episodeCount : false;
+
+  const globalPercent =
+    type === "tv" && profile
+      ? await computeProgressPercent(media, profile.id, watchlistItem?.status ?? "TO_WATCH")
+      : null;
 
   return (
     <div className="px-4 pt-4 pb-10 md:px-10 md:pt-6">
@@ -111,8 +135,23 @@ export default async function MediaDetailPage({
         </div>
       </div>
 
+      {type === "tv" && seasons.length === 0 && (
+        <div className="mt-8 rounded-xl border border-mp-border bg-mp-surface p-6 text-sm text-mp-text-dim">
+          Aucun détail épisode disponible pour cette série.
+        </div>
+      )}
+
       {type === "tv" && seasons.length > 0 && activeSeason && (
         <div className="mt-8">
+          {globalPercent !== null && (
+            <div className="mb-4 flex items-center gap-3">
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-mp-surface-2">
+                <div className="h-full rounded-full bg-mp-accent" style={{ width: `${globalPercent}%` }} />
+              </div>
+              <span className="text-xs font-semibold text-mp-text-dim">{globalPercent}% vu au total</span>
+            </div>
+          )}
+
           <div className="mb-4 flex gap-2 overflow-x-auto">
             {seasons.map((s) => (
               <a
@@ -128,9 +167,40 @@ export default async function MediaDetailPage({
               </a>
             ))}
           </div>
+
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-mp-border bg-mp-surface p-4">
+            <div className="flex flex-1 items-center gap-3">
+              <div className="h-2 flex-1 min-w-[80px] overflow-hidden rounded-full bg-mp-surface-2">
+                <div className="h-full rounded-full bg-mp-accent" style={{ width: `${seasonPercent}%` }} />
+              </div>
+              <span className="text-xs font-semibold text-mp-text-dim">{seasonPercent}%</span>
+            </div>
+            {seasonFullyWatched ? (
+              <form action={unmarkSeasonWatched.bind(null, media.id, activeSeason.season)}>
+                <Button type="submit" size="sm" variant="secondary">
+                  Marquer la saison comme non vue
+                </Button>
+              </form>
+            ) : (
+              <form
+                action={markSeasonWatched.bind(
+                  null,
+                  media.id,
+                  activeSeason.season,
+                  Array.from({ length: activeSeason.episodeCount }, (_, i) => i + 1),
+                )}
+              >
+                <Button type="submit" size="sm" variant="secondary">
+                  Marquer la saison comme vue
+                </Button>
+              </form>
+            )}
+          </div>
+
           <div className="flex flex-col gap-2.5">
             {Array.from({ length: activeSeason.episodeCount }, (_, i) => i + 1).map((ep) => {
               const watched = watchedSet.has(`${activeSeason.season}-${ep}`);
+              const title = titleByEpisode.get(ep);
               return (
                 <form key={ep} action={toggleEpisodeWatched.bind(null, media.id, activeSeason.season, ep)}>
                   <button
@@ -146,7 +216,10 @@ export default async function MediaDetailPage({
                     >
                       {watched && <Check size={13} strokeWidth={3} />}
                     </span>
-                    <span className="text-sm text-mp-text">Épisode {ep}</span>
+                    <span className="text-sm text-mp-text">
+                      Épisode {ep}
+                      {title ? ` – ${title}` : ""}
+                    </span>
                   </button>
                 </form>
               );

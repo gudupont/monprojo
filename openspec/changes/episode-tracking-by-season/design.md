@@ -40,3 +40,7 @@ Actuellement, la progression de visionnage d'une série dans MonProjo est géré
 ## Open Questions
 
 - Faut-il conserver un statut global manuel sur la série (ex: "à voir", "en pause") en complément de la progression dérivée des épisodes, ou le déduire entièrement ? À trancher lors de l'implémentation des tasks.
+
+## Amendement (implémentation)
+
+À l'implémentation, le code existant avait déjà un modèle `EpisodeWatch` (mediaId, profileId, season, episode) fonctionnel pour le suivi vu/non-vu, plus `Media.seasonsJson` pour les compteurs d'épisodes par saison. Décision (validée avec l'utilisateur) : ne pas créer les tables dédiées `Season`/`Episode`/`EpisodeProgress` — réutiliser `EpisodeWatch` tel quel et récupérer les titres d'épisodes à la demande depuis TMDb (`getSeasonEpisodes`), sans les persister. Aucune migration Prisma nécessaire. Le mass watch/unwatch est implémenté via `db.$transaction` (upserts) et `deleteMany` sur `EpisodeWatch`, ce qui satisfait l'exigence d'atomicité sans nouvelle table.

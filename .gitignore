@@ -42,5 +42,6 @@ Thumbs.db
 *.swp
 .idea/
 .vscode/
+.playwright-mcp/
 
 /src/generated/prisma

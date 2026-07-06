@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileTopBar } from "@/components/layout/mobile-top-bar";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { BfcacheRefresh } from "@/components/bfcache-refresh";
 
 const instrumentSerif = Instrument_Serif({
   variable: "--font-serif",
@@ -40,6 +41,7 @@ export default async function RootLayout({
       className={`${instrumentSerif.variable} ${bricolageGrotesque.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-mp-bg text-mp-text">
+        <BfcacheRefresh />
         {profile ? (
           <div className="flex h-screen w-full flex-col md:flex-row">
             <MobileTopBar profileName={profile.name} profileColor={profile.avatarColor} />

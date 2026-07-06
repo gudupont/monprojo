@@ -22,3 +22,33 @@ export async function toggleEpisodeWatched(mediaId: string, season: number, epis
 
   revalidatePath("/", "layout");
 }
+
+export async function markSeasonWatched(mediaId: string, season: number, episodeNumbers: number[]) {
+  const profile = await getActiveProfile();
+  if (!profile) throw new Error("Aucun profil actif");
+
+  await db.$transaction(
+    episodeNumbers.map((episode) =>
+      db.episodeWatch.upsert({
+        where: {
+          mediaId_profileId_season_episode: { mediaId, profileId: profile.id, season, episode },
+        },
+        create: { mediaId, profileId: profile.id, season, episode },
+        update: {},
+      }),
+    ),
+  );
+
+  revalidatePath("/", "layout");
+}
+
+export async function unmarkSeasonWatched(mediaId: string, season: number) {
+  const profile = await getActiveProfile();
+  if (!profile) throw new Error("Aucun profil actif");
+
+  await db.episodeWatch.deleteMany({
+    where: { mediaId, profileId: profile.id, season },
+  });
+
+  revalidatePath("/", "layout");
+}
