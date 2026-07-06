@@ -8,12 +8,13 @@ datasource db {
 }
 
 model Profile {
-  id          String          @id @default(cuid())
-  name        String
-  avatarColor String
-  createdAt   DateTime        @default(now())
-  watchlist   WatchlistItem[]
-  planEntries PlanEntry[]
+  id             String          @id @default(cuid())
+  name           String
+  avatarColor    String
+  createdAt      DateTime        @default(now())
+  watchlist      WatchlistItem[]
+  planEntries    PlanEntry[]
+  episodeWatches EpisodeWatch[]
 }
 
 enum MediaType {
@@ -22,19 +23,36 @@ enum MediaType {
 }
 
 model Media {
-  id          String          @id @default(cuid())
-  tmdbId      Int             @unique
-  imdbId      String?
-  type        MediaType
-  title       String
-  poster      String?
-  overview    String?
-  releaseDate String?
-  tmdbRating  Float?
-  imdbRating  Float?
-  cachedAt    DateTime        @default(now())
-  watchlist   WatchlistItem[]
-  planEntries PlanEntry[]
+  id             String          @id @default(cuid())
+  tmdbId         Int             @unique
+  imdbId         String?
+  type           MediaType
+  title          String
+  poster         String?
+  overview       String?
+  releaseDate    String?
+  tmdbRating     Float?
+  imdbRating     Float?
+  genres         String?
+  seasonsJson    String?
+  cachedAt       DateTime        @default(now())
+  watchlist      WatchlistItem[]
+  planEntries    PlanEntry[]
+  episodeWatches EpisodeWatch[]
+}
+
+model EpisodeWatch {
+  id        String   @id @default(cuid())
+  mediaId   String
+  profileId String
+  season    Int
+  episode   Int
+  watchedAt DateTime @default(now())
+
+  media   Media   @relation(fields: [mediaId], references: [id])
+  profile Profile @relation(fields: [profileId], references: [id])
+
+  @@unique([mediaId, profileId, season, episode])
 }
 
 enum WatchStatus {

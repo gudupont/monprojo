@@ -39,3 +39,19 @@
 * **Mode:** Dark mode imposé (`#0A0B0D`).
 * **Responsive:** Navigation latérale (Sidebar) sur Desktop ; Navigation inférieure (Bottom Bar) sur Mobile.
 * **Accessibilité:** Contrastes élevés (textes `#F3F1EC` et `#93949C`), feedback visuel clair lors des interactions (animations, boutons d'état).
+
+## 5. État d'implémentation (2026-07-06)
+
+Voir `ARCHITECTURE.md` pour le détail technique. Résumé fonctionnel :
+
+| User story | État |
+|---|---|
+| US-1.1, US-1.2 (profils) | Implémenté (`/profiles`, cookie de session) |
+| US-2.x (accueil, continuer à regarder, sorties à venir) | Non implémenté — `/` est un squelette vide |
+| US-3.1, US-3.3 (fiche détail, watchlist) | Implémenté ; pas encore de feedback visuel ni de retrait (change `watchlist-toggle-feedback` en cours) |
+| US-3.2 (validation épisode par épisode) | Non implémenté (change `episode-tracking-by-season` en cours) |
+| US-4.1 (Watchlist filtrée) | Implémenté |
+| US-5.1 (Calendrier) | Implémenté |
+| US-6.1 à US-6.4 (Décider) | Non implémenté — aucune route `/decide`, aucun change OpenSpec associé pour l'instant |
+
+Demandes utilisateur en cours de spécification (voir `openspec/changes/*` et `TASKS.md`) : autocomplete de recherche avec ajout rapide (dès 3 caractères), boutons d'ajout rapide au hover sur les résultats de recherche, détail des épisodes groupés par saison avec validation en masse par saison, feedback de confirmation lors de l'ajout/retrait watchlist, portage de la maquette `src/design/*` vers de vrais composants React/Tailwind.

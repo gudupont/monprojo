@@ -11,10 +11,21 @@ interface MediaCardProps {
   releaseDate: string | null;
   tmdbRating: number | null;
   imdbRating?: number | null;
+  progressPercent?: number;
   footer?: React.ReactNode;
 }
 
-export function MediaCard({ tmdbId, type, title, poster, releaseDate, tmdbRating, imdbRating, footer }: MediaCardProps) {
+export function MediaCard({
+  tmdbId,
+  type,
+  title,
+  poster,
+  releaseDate,
+  tmdbRating,
+  imdbRating,
+  progressPercent,
+  footer,
+}: MediaCardProps) {
   const normalizedType = type.toLowerCase() as "movie" | "tv";
   const year = releaseDate?.slice(0, 4);
 
@@ -26,6 +37,11 @@ export function MediaCard({ tmdbId, type, title, poster, releaseDate, tmdbRating
             <Image src={poster} alt={title} fill className="object-cover" sizes="200px" />
           ) : (
             <div className="flex h-full items-center justify-center text-xs text-muted-foreground">Pas d&apos;affiche</div>
+          )}
+          {typeof progressPercent === "number" && progressPercent > 0 && (
+            <div className="absolute inset-x-0 bottom-0 h-1 bg-black/45">
+              <div className="h-full bg-mp-text" style={{ width: `${progressPercent}%` }} />
+            </div>
           )}
         </div>
       </Link>

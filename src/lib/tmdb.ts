@@ -13,9 +13,16 @@ export interface TmdbSearchResult {
   tmdbRating: number | null;
 }
 
+export interface TmdbSeasonSummary {
+  season: number;
+  episodeCount: number;
+}
+
 export interface TmdbMediaDetail extends TmdbSearchResult {
   imdbId: string | null;
   cast: string[];
+  genres: string[];
+  seasons: TmdbSeasonSummary[] | null;
 }
 
 function getApiKey(): string {
@@ -80,6 +87,8 @@ interface TmdbDetailResponse {
   vote_average: number | null;
   external_ids?: { imdb_id: string | null };
   credits?: { cast: { name: string }[] };
+  genres?: { id: number; name: string }[];
+  seasons?: { season_number: number; episode_count: number }[];
 }
 
 export async function getMediaDetail(tmdbId: number, type: TmdbMediaType): Promise<TmdbMediaDetail> {
@@ -97,5 +106,12 @@ export async function getMediaDetail(tmdbId: number, type: TmdbMediaType): Promi
     tmdbRating: data.vote_average,
     imdbId: data.external_ids?.imdb_id ?? null,
     cast: data.credits?.cast?.slice(0, 10).map((c) => c.name) ?? [],
+    genres: data.genres?.map((g) => g.name) ?? [],
+    seasons:
+      type === "tv"
+        ? (data.seasons ?? [])
+            .filter((s) => s.season_number > 0)
+            .map((s) => ({ season: s.season_number, episodeCount: s.episode_count }))
+        : null,
   };
 }

@@ -24,6 +24,9 @@ export async function getOrRefreshMedia(tmdbId: number, type: TmdbMediaType) {
     }
   }
 
+  const genres = detail.genres.join(",") || null;
+  const seasonsJson = detail.seasons ? JSON.stringify(detail.seasons) : null;
+
   return db.media.upsert({
     where: { tmdbId },
     create: {
@@ -36,6 +39,8 @@ export async function getOrRefreshMedia(tmdbId: number, type: TmdbMediaType) {
       releaseDate: detail.releaseDate,
       tmdbRating: detail.tmdbRating,
       imdbRating,
+      genres,
+      seasonsJson,
     },
     update: {
       imdbId: detail.imdbId,
@@ -45,6 +50,8 @@ export async function getOrRefreshMedia(tmdbId: number, type: TmdbMediaType) {
       releaseDate: detail.releaseDate,
       tmdbRating: detail.tmdbRating,
       imdbRating,
+      genres,
+      seasonsJson,
       cachedAt: new Date(),
     },
   });

@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Instrument_Serif, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
-import { Nav } from "@/components/nav";
+import { getActiveProfile } from "@/lib/session";
+import { db } from "@/lib/db";
+import { Sidebar } from "@/components/layout/sidebar";
+import { MobileTopBar } from "@/components/layout/mobile-top-bar";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-serif",
+  style: ["normal", "italic"],
+  weight: "400",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const bricolageGrotesque = Bricolage_Grotesque({
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
@@ -18,19 +24,38 @@ export const metadata: Metadata = {
   description: "Films et séries à voir en famille, planifiés dans un calendrier partagé",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const profile = await getActiveProfile();
+  const watchlistCount = profile
+    ? await db.watchlistItem.count({ where: { profileId: profile.id } })
+    : 0;
+
   return (
     <html
       lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${instrumentSerif.variable} ${bricolageGrotesque.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <Nav />
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">{children}</main>
+      <body className="min-h-full bg-mp-bg text-mp-text">
+        {profile ? (
+          <div className="flex h-screen w-full flex-col md:flex-row">
+            <MobileTopBar profileName={profile.name} profileColor={profile.avatarColor} />
+            <Sidebar
+              watchlistCount={watchlistCount}
+              profileName={profile.name}
+              profileColor={profile.avatarColor}
+            />
+            <main className="flex-1 overflow-y-auto pt-0 pb-[90px] md:pb-0 md:pt-8">
+              {children}
+            </main>
+            <MobileBottomNav />
+          </div>
+        ) : (
+          <main className="flex min-h-full items-center justify-center px-4 py-6">{children}</main>
+        )}
       </body>
     </html>
   );

@@ -11,6 +11,21 @@ MonProjo est un outil de planification et de suivi de visionnage de séries et d
 * **Database :** Prisma
 * **UI/UX :** Composants fortement inspirés de la maquette cible fournie (utilisation d'états locaux, architecture responsive Desktop/Mobile).
 
+Pour l'architecture détaillée (modèle de données, flux TMDb/OMDb, routes, écart spec/code), voir `ARCHITECTURE.md`. Pour les user stories et leur état d'implémentation, voir `PRD.md`. Les deux sont à tenir à jour à chaque feature significative.
+
+# Règles de Développement & IA
+Ce projet utilise une approche stricte basée sur deux frameworks pour l'assistance IA :
+
+1. **OpenSpec (Spec-Driven Development)**
+   - Ne commence JAMAIS à coder une nouvelle fonctionnalité sans avoir lu ou généré les spécifications OpenSpec correspondantes.
+   - Les spécifications se trouvent dans le dossier dédié (ex: `/specs` ou `.openspec`).
+   - Utilise les commandes `/opsx:` pour interagir avec les spécifications si nécessaire.
+
+2. **Superpowers (Méthodologie de Code)**
+   - Applique le "Systematic Debugging" : analyse toujours les logs et la stack trace avant de proposer une correction.
+   - Applique le "Verification-before-completion" : écris les tests ou vérifie manuellement via des scripts que le code fonctionne avant de clôturer une tâche.
+   - Écris un code modulaire, typé (TypeScript) et respecte les conventions de Next.js (App Router).
+
 ## Outils et "Skills" de l'Assistant
 Lors de l'assistance sur ce projet, l'IA doit configurer son comportement autour des outils suivants :
 
