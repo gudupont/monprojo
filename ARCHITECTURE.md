@@ -86,3 +86,5 @@ Ces items correspondent aux demandes listées dans `TASKS.md`. La feature "Déci
 ## 9. Déploiement
 
 `Dockerfile` multi-stage : build (`npm ci` + `prisma generate` + `next build`) puis image runner Alpine minimale, utilisateur non-root (`nextjs`), volume `/app/data` pour le fichier SQLite. `docker-entrypoint.sh` exécute les migrations Prisma avant de démarrer. `docker-compose.yml` fournit un service unique exposant le port 3000 et injecte `TMDB_API_KEY`/`OMDB_API_KEY` depuis l'environnement hôte.
+
+Dev local sans Node installé : `docker-compose.dev.yml` (image Node nue, bind-mount du repo, `next dev` avec polling). CI/CD : `.github/workflows/docker-publish.yml` build et publie l'image sur GHCR (`ghcr.io/gudupont/monprojo`, package privé) à chaque push sur `main`. Déploiement NAS Synology (Container Manager tire l'image depuis GHCR, ou méthode Projet/import manuel en secours) : voir `DEPLOYMENT.md`.

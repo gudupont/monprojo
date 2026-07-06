@@ -1,5 +1,6 @@
 services:
   monprojo:
+    image: ghcr.io/gudupont/monprojo:latest
     build: .
     ports:
       - "3000:3000"

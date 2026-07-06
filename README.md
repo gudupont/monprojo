@@ -20,6 +20,19 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Développement avec Docker (sans Node local)
+
+```bash
+cp .env.example .env   # renseigner TMDB_API_KEY / OMDB_API_KEY
+docker compose -f docker-compose.dev.yml --env-file .env up
+```
+
+Voir [`DEPLOYMENT.md`](./DEPLOYMENT.md) pour le détail (hot-reload, shell dans le conteneur, reset DB).
+
+## Déploiement production
+
+Image Docker de prod : `Dockerfile` (multi-stage) + `docker-compose.yml`. Pour un déploiement sur NAS Synology (Container Manager), voir [`DEPLOYMENT.md`](./DEPLOYMENT.md).
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
