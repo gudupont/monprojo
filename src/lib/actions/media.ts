@@ -3,12 +3,16 @@
 import { db } from "@/lib/db";
 import { getMediaDetail, getWatchProviders, type TmdbMediaType } from "@/lib/tmdb";
 import { getImdbRating } from "@/lib/omdb";
+import { parseSeasons } from "@/lib/progress";
 
 const CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24h
 
 export async function getOrRefreshMedia(tmdbId: number, type: TmdbMediaType) {
   const existing = await db.media.findUnique({ where: { tmdbId } });
-  const hasIncompleteSeasons = existing?.type === "TV" && existing.seasonsJson === null;
+  const hasIncompleteSeasons =
+    existing?.type === "TV" &&
+    (existing.seasonsJson === null ||
+      parseSeasons(existing.seasonsJson).some((s) => !Array.isArray(s.episodes)));
   const isFresh =
     existing && !hasIncompleteSeasons && Date.now() - existing.cachedAt.getTime() < CACHE_TTL_MS;
   if (isFresh) {

@@ -2,8 +2,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { deletePlanEntry } from "@/lib/actions/calendar";
+import { getUpcomingReleases } from "@/lib/calendar-releases";
+import { getActiveProfile } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { CalendarSubscription } from "@/components/calendar-subscription";
+import type { Media, Profile } from "@prisma/client";
+
+interface PlanRow {
+  kind: "plan";
+  id: string;
+  date: Date;
+  media: Media;
+  notes: string | null;
+  createdByProfile: Profile;
+}
+
+interface ReleaseRow {
+  kind: "release";
+  id: string;
+  date: Date;
+  media: Media;
+  label: string | null;
+}
+
+type CalendarRow = PlanRow | ReleaseRow;
 
 const MONTHS_ABBR = [
   "janv.",
@@ -30,11 +52,38 @@ function dateBadge(date: Date) {
 }
 
 export default async function CalendarPage() {
-  const entries = await db.planEntry.findMany({
-    where: { scheduledAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
-    include: { media: true, createdByProfile: true },
-    orderBy: { scheduledAt: "asc" },
-  });
+  const profile = await getActiveProfile();
+
+  const [planEntries, releases] = await Promise.all([
+    db.planEntry.findMany({
+      where: { scheduledAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
+      include: { media: true, createdByProfile: true },
+      orderBy: { scheduledAt: "asc" },
+    }),
+    profile ? getUpcomingReleases(profile.id) : Promise.resolve([]),
+  ]);
+
+  const rows: CalendarRow[] = [
+    ...planEntries.map(
+      (entry): PlanRow => ({
+        kind: "plan",
+        id: entry.id,
+        date: entry.scheduledAt,
+        media: entry.media,
+        notes: entry.notes,
+        createdByProfile: entry.createdByProfile,
+      })
+    ),
+    ...releases.map(
+      (release): ReleaseRow => ({
+        kind: "release",
+        id: release.id,
+        date: release.date,
+        media: release.media,
+        label: release.label,
+      })
+    ),
+  ].sort((a, b) => a.date.getTime() - b.date.getTime());
 
   return (
     <div className="px-4 pt-5 md:px-10 md:pt-0">
@@ -43,20 +92,25 @@ export default async function CalendarPage() {
 
       <CalendarSubscription />
 
-      {entries.length === 0 && (
+      {rows.length === 0 && (
         <p className="pb-10 text-sm text-mp-text-dim">
           Rien de planifié pour le moment. Ajoutez une séance depuis la fiche d&apos;un film ou d&apos;une série.
         </p>
       )}
 
       <div className="flex flex-col gap-3 pb-10">
-        {entries.map((entry) => {
-          const { day, weekday, isToday } = dateBadge(entry.scheduledAt);
+        {rows.map((row) => {
+          const { day, weekday, isToday } = dateBadge(row.date);
+          const isRelease = row.kind === "release";
           return (
             <div
-              key={entry.id}
+              key={row.id}
               className={`flex items-center gap-4 rounded-2xl border p-4 ${
-                isToday ? "border-mp-accent bg-mp-accent/10" : "border-mp-border bg-mp-surface"
+                isToday
+                  ? "border-mp-accent bg-mp-accent/10"
+                  : isRelease
+                    ? "border-dashed border-mp-border bg-mp-surface"
+                    : "border-mp-border bg-mp-surface"
               }`}
             >
               <div className="w-[72px] shrink-0 text-center md:w-[88px]">
@@ -68,28 +122,39 @@ export default async function CalendarPage() {
                 <span className="text-[11px] uppercase text-mp-text-dim">{weekday}</span>
               </div>
               <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[10px] bg-mp-surface-2">
-                {entry.media.poster && (
-                  <Image src={entry.media.poster} alt={entry.media.title} fill className="object-cover" sizes="48px" />
+                {row.media.poster && (
+                  <Image src={row.media.poster} alt={row.media.title} fill className="object-cover" sizes="48px" />
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <Link
-                  href={`/media/${entry.media.type.toLowerCase()}/${entry.media.tmdbId}`}
-                  className="truncate text-sm font-bold text-mp-text"
-                >
-                  {entry.media.title} · {entry.media.type === "TV" ? "Série" : "Film"}
-                </Link>
-                <div className="mt-0.5 text-xs text-mp-text-dim">
-                  {entry.scheduledAt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} · planifié par{" "}
-                  {entry.createdByProfile.name}
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/media/${row.media.type.toLowerCase()}/${row.media.tmdbId}`}
+                    className="truncate text-sm font-bold text-mp-text"
+                  >
+                    {row.media.title} · {row.media.type === "TV" ? "Série" : "Film"}
+                    {row.kind === "release" && row.label ? ` · ${row.label}` : ""}
+                  </Link>
+                  <span
+                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase ${
+                      isRelease ? "border-mp-border text-mp-text-dim" : "border-mp-accent text-mp-accent"
+                    }`}
+                  >
+                    {isRelease ? "Sortie" : "Planifié"}
+                  </span>
                 </div>
-                {entry.notes && <p className="mt-1 text-xs text-mp-text-dim">{entry.notes}</p>}
+                {row.kind === "plan" && (
+                  <div className="mt-0.5 text-xs text-mp-text-dim">planifié par {row.createdByProfile.name}</div>
+                )}
+                {row.kind === "plan" && row.notes && <p className="mt-1 text-xs text-mp-text-dim">{row.notes}</p>}
               </div>
-              <form action={deletePlanEntry.bind(null, entry.id)}>
-                <Button type="submit" size="sm" variant="ghost">
-                  Retirer
-                </Button>
-              </form>
+              {row.kind === "plan" && (
+                <form action={deletePlanEntry.bind(null, row.id)}>
+                  <Button type="submit" size="sm" variant="ghost">
+                    Retirer
+                  </Button>
+                </form>
+              )}
             </div>
           );
         })}

@@ -35,9 +35,9 @@ export function PlanDialog({ mediaId, title }: { mediaId: string; title: string 
           <input type="hidden" name="mediaId" value={mediaId} />
           <div className="space-y-1">
             <label className="text-sm font-medium" htmlFor="scheduledAt">
-              Date et heure
+              Date
             </label>
-            <Input id="scheduledAt" name="scheduledAt" type="datetime-local" required />
+            <Input id="scheduledAt" name="scheduledAt" type="date" required />
           </div>
           <div className="space-y-1">
             <label className="text-sm font-medium" htmlFor="notes">

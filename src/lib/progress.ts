@@ -1,6 +1,13 @@
+export interface EpisodeSummary {
+  episode: number;
+  title: string;
+  airDate: string | null;
+}
+
 export interface SeasonSummary {
   season: number;
   episodeCount: number;
+  episodes?: EpisodeSummary[];
 }
 
 export function parseSeasons(seasonsJson: string | null): SeasonSummary[] {

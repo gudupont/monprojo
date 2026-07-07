@@ -25,7 +25,7 @@ const TYPE_TABS = [
 export function DecideClient({ candidates }: { candidates: DecideCandidate[] }) {
   const [type, setType] = useState<(typeof TYPE_TABS)[number]["key"]>("tous");
   const [genres, setGenres] = useState<string[]>([]);
-  const [excludeSeen, setExcludeSeen] = useState(false);
+  const [excludeSeen, setExcludeSeen] = useState(true);
   const [pick, setPick] = useState<DecideCandidate | null>(null);
 
   const allGenres = useMemo(

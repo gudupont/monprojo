@@ -1,9 +1,4 @@
-import type { Media, MediaType, PlanEntry } from "@prisma/client";
-
-const DURATION_MINUTES: Record<MediaType, number> = {
-  MOVIE: 120,
-  TV: 45,
-};
+import type { Media, PlanEntry } from "@prisma/client";
 
 export function escapeICalText(text: string): string {
   return text
@@ -17,18 +12,25 @@ export function formatICalDate(date: Date): string {
   return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
 }
 
+export function formatICalDateOnly(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}${month}${day}`;
+}
+
 type PlanEntryWithMedia = PlanEntry & { media: Media };
 
 function buildVEvent(entry: PlanEntryWithMedia, now: Date): string {
-  const durationMinutes = DURATION_MINUTES[entry.media.type];
-  const dtEnd = new Date(entry.scheduledAt.getTime() + durationMinutes * 60 * 1000);
+  const dtEnd = new Date(entry.scheduledAt);
+  dtEnd.setDate(dtEnd.getDate() + 1);
 
   return [
     "BEGIN:VEVENT",
     `UID:${entry.id}@monprojo`,
     `DTSTAMP:${formatICalDate(now)}`,
-    `DTSTART:${formatICalDate(entry.scheduledAt)}`,
-    `DTEND:${formatICalDate(dtEnd)}`,
+    `DTSTART;VALUE=DATE:${formatICalDateOnly(entry.scheduledAt)}`,
+    `DTEND;VALUE=DATE:${formatICalDateOnly(dtEnd)}`,
     `SUMMARY:${escapeICalText(entry.media.title)}`,
     "END:VEVENT",
   ].join("\r\n");

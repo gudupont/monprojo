@@ -13,15 +13,16 @@ export interface TmdbSearchResult {
   tmdbRating: number | null;
 }
 
-export interface TmdbSeasonSummary {
-  season: number;
-  episodeCount: number;
-}
-
 export interface TmdbEpisodeSummary {
   episode: number;
   title: string;
   airDate: string | null;
+}
+
+export interface TmdbSeasonSummary {
+  season: number;
+  episodeCount: number;
+  episodes?: TmdbEpisodeSummary[];
 }
 
 export interface TmdbMediaDetail extends TmdbSearchResult {
@@ -102,6 +103,24 @@ export async function getMediaDetail(tmdbId: number, type: TmdbMediaType): Promi
     append_to_response: "external_ids,credits",
   });
 
+  let seasons: TmdbSeasonSummary[] | null = null;
+  if (type === "tv") {
+    const seasonSummaries = (data.seasons ?? [])
+      .filter((s) => s.season_number > 0)
+      .map((s) => ({ season: s.season_number, episodeCount: s.episode_count }));
+
+    seasons = await Promise.all(
+      seasonSummaries.map(async (s) => {
+        try {
+          const episodes = await getSeasonEpisodes(tmdbId, s.season);
+          return { ...s, episodes };
+        } catch {
+          return s;
+        }
+      })
+    );
+  }
+
   return {
     tmdbId: data.id,
     type,
@@ -113,12 +132,7 @@ export async function getMediaDetail(tmdbId: number, type: TmdbMediaType): Promi
     imdbId: data.external_ids?.imdb_id ?? null,
     cast: data.credits?.cast?.slice(0, 10).map((c) => c.name) ?? [],
     genres: data.genres?.map((g) => g.name) ?? [],
-    seasons:
-      type === "tv"
-        ? (data.seasons ?? [])
-            .filter((s) => s.season_number > 0)
-            .map((s) => ({ season: s.season_number, episodeCount: s.episode_count }))
-        : null,
+    seasons,
   };
 }
 

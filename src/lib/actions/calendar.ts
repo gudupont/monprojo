@@ -12,14 +12,18 @@ export async function createPlanEntry(formData: FormData) {
   const scheduledAt = formData.get("scheduledAt");
   const notes = formData.get("notes");
 
-  if (typeof mediaId !== "string" || typeof scheduledAt !== "string" || !scheduledAt) {
+  if (
+    typeof mediaId !== "string" ||
+    typeof scheduledAt !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(scheduledAt)
+  ) {
     throw new Error("Données de planification invalides");
   }
 
   await db.planEntry.create({
     data: {
       mediaId,
-      scheduledAt: new Date(scheduledAt),
+      scheduledAt: new Date(`${scheduledAt}T00:00:00`),
       createdByProfileId: profile.id,
       notes: typeof notes === "string" && notes.trim() ? notes.trim() : null,
     },

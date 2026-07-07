@@ -117,7 +117,7 @@ export default async function Home() {
 
       <section className="mb-8 md:mb-10">
         <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="font-heading text-2xl text-mp-text md:text-[26px]">Sorties à venir</h2>
+          <h2 className="font-heading text-2xl text-mp-text md:text-[26px]">Visionnages plannifiés</h2>
           <Link href="/calendar" className="text-[13px] font-semibold text-mp-accent">
             Voir le calendrier
           </Link>
