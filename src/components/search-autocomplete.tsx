@@ -125,11 +125,11 @@ export function SearchAutocomplete({ variant = "page", initialQuery = "", initia
       </div>
 
       {open && (
-        <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-mp-border bg-mp-surface shadow-lg">
+        <div className="absolute z-20 mt-2 w-[max(100%,320px)] rounded-xl border border-mp-border bg-mp-surface shadow-lg">
           {suggestions.length === 0 ? (
             <p className="px-4 py-3 text-sm text-mp-text-dim">Aucun résultat pour cette recherche.</p>
           ) : (
-            <ul className="max-h-80 overflow-y-auto">
+            <ul className="max-h-80 overflow-y-auto overflow-x-hidden rounded-xl">
               {suggestions.map((item) => {
                 const key = `${item.type}-${item.tmdbId}`;
                 const addState = addStates[key] ?? "idle";
@@ -146,7 +146,7 @@ export function SearchAutocomplete({ variant = "page", initialQuery = "", initia
                       ) : null}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[14px] text-mp-text">{item.title}</p>
+                      <p className="text-[14px] text-mp-text">{item.title}</p>
                       <div className="flex items-center gap-2 text-[12px] text-mp-text-dim">
                         {year && <span>{year}</span>}
                         <span className="rounded-full border border-mp-border px-2 py-0.5">

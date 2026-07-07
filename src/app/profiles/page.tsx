@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProviderSelector } from "@/components/provider-selector";
 import { RadarrSettings } from "@/components/radarr-settings";
+import { CollapsibleSection } from "@/components/collapsible-section";
 
 export default async function ProfilesPage() {
   const profiles = await db.profile.findMany({ orderBy: { createdAt: "asc" } });
@@ -18,7 +19,7 @@ export default async function ProfilesPage() {
     : [[], []];
 
   return (
-    <div className="mx-auto max-w-md space-y-8">
+    <div className="mx-auto max-w-md space-y-6">
       <h1 className="text-2xl font-semibold">Qui regarde ?</h1>
 
       {profiles.length > 0 && (
@@ -26,7 +27,7 @@ export default async function ProfilesPage() {
           {profiles.map((profile) => (
             <form key={profile.id} action={selectProfile}>
               <input type="hidden" name="profileId" value={profile.id} />
-              <button type="submit" className="flex flex-col items-center gap-2">
+              <button type="submit" className="flex cursor-pointer flex-col items-center gap-2">
                 <Avatar className="h-16 w-16" style={{ backgroundColor: profile.avatarColor }}>
                   <AvatarFallback style={{ backgroundColor: profile.avatarColor }} className="text-white text-xl">
                     {profile.name.slice(0, 2).toUpperCase()}
@@ -45,14 +46,13 @@ export default async function ProfilesPage() {
       </form>
 
       {activeProfile && (
-        <div>
-          <h2 className="mb-3 text-lg font-semibold">Mes plateformes</h2>
+        <CollapsibleSection title="Mes plateformes">
           <ProviderSelector
             profileId={activeProfile.id}
             providers={availableProviders}
             initialSelectedIds={selectedProviderIds}
           />
-        </div>
+        </CollapsibleSection>
       )}
 
       {activeProfile && (

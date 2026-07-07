@@ -63,7 +63,7 @@ export function DecideClient({ candidates }: { candidates: DecideCandidate[] }) 
             key={tab.key}
             type="button"
             onClick={() => setType(tab.key)}
-            className={`rounded-full px-4 py-2 text-[13px] font-semibold ${
+            className={`cursor-pointer rounded-full px-4 py-2 text-[13px] font-semibold ${
               type === tab.key ? "bg-mp-accent text-mp-accent-ink" : "border border-mp-border bg-mp-surface text-mp-text-dim"
             }`}
           >
@@ -81,7 +81,7 @@ export function DecideClient({ candidates }: { candidates: DecideCandidate[] }) 
                 key={g}
                 type="button"
                 onClick={() => toggleGenre(g)}
-                className={`rounded-full px-4 py-2 text-[13px] font-semibold ${
+                className={`cursor-pointer rounded-full px-4 py-2 text-[13px] font-semibold ${
                   genres.includes(g) ? "bg-mp-accent text-mp-accent-ink" : "border border-mp-border bg-mp-surface text-mp-text-dim"
                 }`}
               >
@@ -95,7 +95,7 @@ export function DecideClient({ candidates }: { candidates: DecideCandidate[] }) 
       <button
         type="button"
         onClick={() => setExcludeSeen((v) => !v)}
-        className="mb-7 flex items-center gap-2.5 text-left"
+        className="mb-7 flex cursor-pointer items-center gap-2.5 text-left"
       >
         <span
           className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md ${
@@ -117,7 +117,7 @@ export function DecideClient({ candidates }: { candidates: DecideCandidate[] }) 
           onClick={spin}
           disabled={!filtered.length}
           className={`mb-7 rounded-full px-8 py-4 text-base font-bold ${
-            filtered.length ? "bg-mp-accent text-mp-accent-ink" : "bg-mp-surface-2 text-mp-text-dim"
+            filtered.length ? "cursor-pointer bg-mp-accent text-mp-accent-ink" : "cursor-not-allowed bg-mp-surface-2 text-mp-text-dim"
           }`}
         >
           Lancer le tirage
@@ -134,14 +134,14 @@ export function DecideClient({ candidates }: { candidates: DecideCandidate[] }) 
               <div className="flex flex-wrap gap-2.5">
                 <Link
                   href={`/media/${pick.type}/${pick.tmdbId}`}
-                  className="rounded-full bg-mp-accent px-4.5 py-2.5 text-[13px] font-bold text-mp-accent-ink"
+                  className="cursor-pointer rounded-full bg-mp-accent px-4.5 py-2.5 text-[13px] font-bold text-mp-accent-ink"
                 >
                   Regarder maintenant
                 </Link>
                 <button
                   type="button"
                   onClick={spin}
-                  className="rounded-full border border-mp-border px-4.5 py-2.5 text-[13px] font-bold text-mp-text"
+                  className="cursor-pointer rounded-full border border-mp-border px-4.5 py-2.5 text-[13px] font-bold text-mp-text"
                 >
                   Relancer
                 </button>

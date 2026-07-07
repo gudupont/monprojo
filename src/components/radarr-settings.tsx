@@ -66,10 +66,12 @@ export function RadarrSettings({ profileId, initialUrl, hasConfig }: RadarrSetti
         {isPending ? "Test en cours…" : "Enregistrer"}
       </Button>
       {status === "success" && (
-        <p className="text-xs font-semibold text-mp-accent">Connexion Radarr réussie, config sauvegardée.</p>
+        <p className="whitespace-normal break-words text-xs font-semibold text-mp-accent">
+          Connexion Radarr réussie, config sauvegardée.
+        </p>
       )}
       {status === "error" && (
-        <p className="text-xs font-semibold text-red-400">{error}</p>
+        <p className="whitespace-normal break-words text-xs font-semibold text-red-400">{error}</p>
       )}
     </form>
   );

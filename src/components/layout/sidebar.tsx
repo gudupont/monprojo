@@ -52,8 +52,7 @@ export function Sidebar({ watchlistCount, profileName, profileColor }: SidebarPr
           <span className="text-xs text-mp-text-dim">dans ma liste</span>
         </div>
         <div className="flex items-center gap-2 px-1 text-sm text-mp-text-dim">
-          <ProfileMenu profileName={profileName} profileColor={profileColor} avatarClassName="h-6 w-6" />
-          {profileName}
+          <ProfileMenu profileName={profileName} profileColor={profileColor} avatarClassName="h-6 w-6" showName />
         </div>
       </div>
     </div>

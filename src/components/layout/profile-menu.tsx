@@ -14,9 +14,10 @@ interface ProfileMenuProps {
   profileName: string;
   profileColor: string;
   avatarClassName?: string;
+  showName?: boolean;
 }
 
-export function ProfileMenu({ profileName, profileColor, avatarClassName }: ProfileMenuProps) {
+export function ProfileMenu({ profileName, profileColor, avatarClassName, showName }: ProfileMenuProps) {
   const router = useRouter();
 
   async function handleLogout() {
@@ -27,12 +28,13 @@ export function ProfileMenu({ profileName, profileColor, avatarClassName }: Prof
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center rounded-full outline-none">
+      <DropdownMenuTrigger className="flex cursor-pointer items-center gap-2 rounded-full outline-none">
         <Avatar className={avatarClassName} style={{ backgroundColor: profileColor }}>
           <AvatarFallback style={{ backgroundColor: profileColor }} className="text-white text-xs">
             {profileName.slice(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
+        {showName && <span className="text-sm text-mp-text-dim">{profileName}</span>}
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={() => router.push("/profiles")}>
