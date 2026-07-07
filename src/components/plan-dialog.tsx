@@ -11,9 +11,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { createPlanEntry } from "@/lib/actions/calendar";
+import { createPlanEntry, resolveAndCreatePlanEntry } from "@/lib/actions/calendar";
+import type { TmdbMediaType } from "@/lib/tmdb";
 
-export function PlanDialog({ mediaId, title }: { mediaId: string; title: string }) {
+type PlanDialogProps = { title: string } & (
+  | { mediaId: string; tmdbId?: undefined; type?: undefined }
+  | { mediaId?: undefined; tmdbId: number; type: TmdbMediaType }
+);
+
+export function PlanDialog({ mediaId, tmdbId, type, title }: PlanDialogProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -27,12 +33,23 @@ export function PlanDialog({ mediaId, title }: { mediaId: string; title: string 
         </DialogHeader>
         <form
           action={async (formData) => {
-            await createPlanEntry(formData);
+            if (mediaId) {
+              await createPlanEntry(formData);
+            } else {
+              await resolveAndCreatePlanEntry(formData);
+            }
             setOpen(false);
           }}
           className="space-y-4"
         >
-          <input type="hidden" name="mediaId" value={mediaId} />
+          {mediaId ? (
+            <input type="hidden" name="mediaId" value={mediaId} />
+          ) : (
+            <>
+              <input type="hidden" name="tmdbId" value={tmdbId} />
+              <input type="hidden" name="type" value={type} />
+            </>
+          )}
           <div className="space-y-1">
             <label className="text-sm font-medium" htmlFor="scheduledAt">
               Date

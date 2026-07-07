@@ -19,6 +19,8 @@ function makeMedia(overrides: Partial<Media>): Media {
     genres: null,
     seasonsJson: null,
     watchProvidersJson: null,
+    runtimeMinutes: null,
+    episodeRuntimeMinutes: null,
     cachedAt: new Date(),
     ...overrides,
   };
@@ -31,6 +33,7 @@ function makeWatchlistItem(media: Media, status: WatchStatus = "TO_WATCH"): Watc
     profileId: "profile-1",
     status,
     addedAt: new Date(),
+    watchedAt: null,
     media,
   };
 }

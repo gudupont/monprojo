@@ -23,6 +23,7 @@ export async function quickAddToWatchlist(tmdbId: number, type: TmdbMediaType): 
   });
 
   await addToWatchlist(media.id);
+  revalidatePath("/calendar");
 
   return existing ? { status: "already-in-watchlist" } : { status: "added" };
 }
@@ -66,11 +67,12 @@ export async function toggleMovieWatched(mediaId: string) {
   });
 
   const nextStatus: WatchStatus = existing?.status === "WATCHED" ? "TO_WATCH" : "WATCHED";
+  const watchedAt = nextStatus === "WATCHED" ? new Date() : null;
 
   await db.watchlistItem.upsert({
     where: { mediaId_profileId: { mediaId, profileId: profile.id } },
-    create: { mediaId, profileId: profile.id, status: nextStatus },
-    update: { status: nextStatus },
+    create: { mediaId, profileId: profile.id, status: nextStatus, watchedAt },
+    update: { status: nextStatus, watchedAt },
   });
 
   revalidatePath("/", "layout");
@@ -82,7 +84,7 @@ export async function updateWatchlistStatus(itemId: string, status: WatchStatus)
 
   await db.watchlistItem.update({
     where: { id: itemId, profileId: profile.id },
-    data: { status },
+    data: { status, watchedAt: status === "WATCHED" ? new Date() : null },
   });
 
   revalidatePath("/watchlist");
@@ -97,4 +99,18 @@ export async function removeFromWatchlist(itemId: string) {
   });
 
   revalidatePath("/watchlist");
+}
+
+export async function getWatchlistItemsByActor(actorTmdbId: number, excludeMediaId: string) {
+  const profile = await getActiveProfile();
+  if (!profile) return [];
+
+  return db.watchlistItem.findMany({
+    where: {
+      profileId: profile.id,
+      mediaId: { not: excludeMediaId },
+      media: { cast: { some: { actor: { tmdbId: actorTmdbId } } } },
+    },
+    include: { media: true },
+  });
 }

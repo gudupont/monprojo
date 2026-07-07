@@ -15,6 +15,7 @@ import { getSonarrStatus, checkInSonarr } from "@/lib/actions/sonarr";
 import type { TmdbWatchProviders } from "@/lib/tmdb";
 import { Button } from "@/components/ui/button";
 import { PlanDialog } from "@/components/plan-dialog";
+import { CastList } from "@/components/cast-list";
 import { BackLink } from "@/components/back-link";
 import { WatchProviders } from "@/components/watch-providers";
 import { RadarrButton } from "@/components/radarr-button";
@@ -285,7 +286,7 @@ export default async function MediaDetailPage({
       {detail.cast.length > 0 && (
         <div className="mt-9">
           <h2 className="mb-3 font-heading text-2xl text-mp-text">Distribution</h2>
-          <p className="max-w-xl text-[15px] leading-relaxed text-mp-text-dim">{detail.cast.join(" · ")}</p>
+          <CastList cast={detail.cast} mediaId={media.id} />
         </div>
       )}
     </div>

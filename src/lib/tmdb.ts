@@ -25,11 +25,20 @@ export interface TmdbSeasonSummary {
   episodes?: TmdbEpisodeSummary[];
 }
 
+export interface TmdbCastMember {
+  tmdbId: number;
+  name: string;
+  character: string;
+  profilePath: string | null;
+}
+
 export interface TmdbMediaDetail extends TmdbSearchResult {
   imdbId: string | null;
-  cast: string[];
+  cast: TmdbCastMember[];
   genres: string[];
   seasons: TmdbSeasonSummary[] | null;
+  runtime: number | null;
+  episodeRunTime: number | null;
 }
 
 function getApiKey(): string {
@@ -93,9 +102,11 @@ interface TmdbDetailResponse {
   first_air_date?: string;
   vote_average: number | null;
   external_ids?: { imdb_id: string | null };
-  credits?: { cast: { name: string }[] };
+  credits?: { cast: { id: number; name: string; character: string; profile_path: string | null }[] };
   genres?: { id: number; name: string }[];
   seasons?: { season_number: number; episode_count: number }[];
+  runtime?: number | null;
+  episode_run_time?: number[];
 }
 
 export async function getMediaDetail(tmdbId: number, type: TmdbMediaType): Promise<TmdbMediaDetail> {
@@ -130,9 +141,17 @@ export async function getMediaDetail(tmdbId: number, type: TmdbMediaType): Promi
     releaseDate: data.release_date ?? data.first_air_date ?? null,
     tmdbRating: data.vote_average,
     imdbId: data.external_ids?.imdb_id ?? null,
-    cast: data.credits?.cast?.slice(0, 10).map((c) => c.name) ?? [],
+    cast:
+      data.credits?.cast?.slice(0, 10).map((c) => ({
+        tmdbId: c.id,
+        name: c.name,
+        character: c.character,
+        profilePath: c.profile_path ? `${TMDB_IMAGE_BASE_URL}${c.profile_path}` : null,
+      })) ?? [],
     genres: data.genres?.map((g) => g.name) ?? [],
     seasons,
+    runtime: type === "movie" ? data.runtime ?? null : null,
+    episodeRunTime: type === "tv" ? data.episode_run_time?.[0] ?? null : null,
   };
 }
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { searchMedia } from "@/lib/tmdb";
 import { MediaCard } from "@/components/media-card";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
+import { QuickAddActions } from "@/components/quick-add-actions";
 
 const TYPE_TABS = [
   { key: "tout", label: "Tout" },
@@ -68,6 +69,9 @@ export default async function SearchPage({
             poster={item.poster}
             releaseDate={item.releaseDate}
             tmdbRating={item.tmdbRating}
+            hoverActions={
+              <QuickAddActions tmdbId={item.tmdbId} type={item.type} title={item.title} />
+            }
           />
         ))}
       </div>

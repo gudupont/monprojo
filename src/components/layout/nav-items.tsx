@@ -1,4 +1,4 @@
-import { Home, Search, Bookmark, Calendar, Dices } from "lucide-react";
+import { Home, Search, Bookmark, Calendar, Dices, BarChart3 } from "lucide-react";
 
 export const NAV_ITEMS = [
   { href: "/", label: "Accueil", icon: Home },
@@ -6,6 +6,7 @@ export const NAV_ITEMS = [
   { href: "/watchlist", label: "Ma liste", icon: Bookmark },
   { href: "/calendar", label: "Calendrier", icon: Calendar },
   { href: "/decide", label: "Décider", icon: Dices },
+  { href: "/stats", label: "Statistiques", icon: BarChart3 },
 ] as const;
 
 export const SEARCH_HIDDEN_PATHS = ["/search"] as const;

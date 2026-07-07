@@ -13,6 +13,7 @@ interface MediaCardProps {
   imdbRating?: number | null;
   progressPercent?: number;
   footer?: React.ReactNode;
+  hoverActions?: React.ReactNode;
 }
 
 export function MediaCard({
@@ -25,26 +26,34 @@ export function MediaCard({
   imdbRating,
   progressPercent,
   footer,
+  hoverActions,
 }: MediaCardProps) {
   const normalizedType = type.toLowerCase() as "movie" | "tv";
   const year = releaseDate?.slice(0, 4);
 
   return (
     <Card className="overflow-hidden py-0 gap-0">
-      <Link href={`/media/${normalizedType}/${tmdbId}`}>
-        <div className="relative aspect-[2/3] w-full bg-muted">
-          {poster ? (
-            <Image src={poster} alt={title} fill className="object-cover" sizes="200px" />
-          ) : (
-            <div className="flex h-full items-center justify-center text-xs text-muted-foreground">Pas d&apos;affiche</div>
-          )}
-          {typeof progressPercent === "number" && progressPercent > 0 && (
-            <div className="absolute inset-x-0 bottom-0 h-1 bg-black/45">
-              <div className="h-full bg-mp-text" style={{ width: `${progressPercent}%` }} />
-            </div>
-          )}
-        </div>
-      </Link>
+      <div className="group relative">
+        <Link href={`/media/${normalizedType}/${tmdbId}`}>
+          <div className="relative aspect-[2/3] w-full bg-muted">
+            {poster ? (
+              <Image src={poster} alt={title} fill className="object-cover" sizes="200px" />
+            ) : (
+              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">Pas d&apos;affiche</div>
+            )}
+            {typeof progressPercent === "number" && progressPercent > 0 && (
+              <div className="absolute inset-x-0 bottom-0 h-1 bg-black/45">
+                <div className="h-full bg-mp-text" style={{ width: `${progressPercent}%` }} />
+              </div>
+            )}
+          </div>
+        </Link>
+        {hoverActions && (
+          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+            {hoverActions}
+          </div>
+        )}
+      </div>
       <CardContent className="space-y-1 p-3">
         <Link href={`/media/${normalizedType}/${tmdbId}`} className="line-clamp-1 text-sm font-medium">
           {title}
