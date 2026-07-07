@@ -10,6 +10,7 @@ import { ProviderSelector } from "@/components/provider-selector";
 import { RadarrSettings } from "@/components/radarr-settings";
 import { SonarrSettings } from "@/components/sonarr-settings";
 import { CollapsibleSection } from "@/components/collapsible-section";
+import { DeleteProfileModal } from "@/components/delete-profile-modal";
 
 export default async function ProfilesPage() {
   const profiles = await db.profile.findMany({ orderBy: { createdAt: "asc" } });
@@ -24,19 +25,24 @@ export default async function ProfilesPage() {
       <h1 className="text-2xl font-semibold">Qui regarde ?</h1>
 
       {profiles.length > 0 && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="flex flex-wrap justify-center gap-4">
           {profiles.map((profile) => (
-            <form key={profile.id} action={selectProfile}>
-              <input type="hidden" name="profileId" value={profile.id} />
-              <button type="submit" className="flex cursor-pointer flex-col items-center gap-2">
-                <Avatar className="h-16 w-16" style={{ backgroundColor: profile.avatarColor }}>
-                  <AvatarFallback style={{ backgroundColor: profile.avatarColor }} className="text-white text-xl">
-                    {profile.name.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm">{profile.name}</span>
-              </button>
-            </form>
+            <div key={profile.id} className="relative">
+              <form action={selectProfile}>
+                <input type="hidden" name="profileId" value={profile.id} />
+                <button type="submit" className="flex cursor-pointer flex-col items-center gap-2">
+                  <Avatar className="h-16 w-16" style={{ backgroundColor: profile.avatarColor }}>
+                    <AvatarFallback style={{ backgroundColor: profile.avatarColor }} className="text-white text-xl">
+                      {profile.name.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm">{profile.name}</span>
+                </button>
+              </form>
+              <div className="absolute -top-1 -right-1">
+                <DeleteProfileModal profileId={profile.id} profileName={profile.name} />
+              </div>
+            </div>
           ))}
         </div>
       )}

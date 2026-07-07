@@ -17,6 +17,7 @@ const STATUS_ORDER: WatchStatus[] = ["TO_WATCH", "WATCHING", "WATCHED"];
 
 const FILTERS = [
   { key: "tout", label: "Tout" },
+  { key: "nonvu", label: "Non vus" },
   { key: "film", label: "Films" },
   { key: "serie", label: "Séries" },
   { key: "encours", label: "En cours" },
@@ -48,6 +49,7 @@ export default async function WatchlistPage({
   );
 
   const filtered = withProgress.filter(({ item, progress }) => {
+    if (activeFilter === "nonvu") return item.status !== "WATCHED";
     if (activeFilter === "film") return item.media.type === "MOVIE";
     if (activeFilter === "serie") return item.media.type === "TV";
     if (activeFilter === "encours") return progress > 0 && progress < 100;

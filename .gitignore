@@ -52,3 +52,5 @@ TASKS.md
 /playwright/.cache/
 
 /src/generated/prisma
+
+import/

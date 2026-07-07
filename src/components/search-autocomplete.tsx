@@ -140,20 +140,29 @@ export function SearchAutocomplete({ variant = "page", initialQuery = "", initia
                     key={key}
                     className="flex items-center gap-3 border-b border-mp-border px-4 py-2.5 last:border-b-0"
                   >
-                    <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded bg-mp-bg">
-                      {item.poster ? (
-                        <Image src={item.poster} alt={item.title} fill className="object-cover" sizes="40px" />
-                      ) : null}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[14px] text-mp-text">{item.title}</p>
-                      <div className="flex items-center gap-2 text-[12px] text-mp-text-dim">
-                        {year && <span>{year}</span>}
-                        <span className="rounded-full border border-mp-border px-2 py-0.5">
-                          {item.type === "movie" ? "Film" : "Série"}
-                        </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpen(false);
+                        router.push(`/media/${item.type}/${item.tmdbId}`);
+                      }}
+                      className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
+                    >
+                      <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded bg-mp-bg">
+                        {item.poster ? (
+                          <Image src={item.poster} alt={item.title} fill className="object-cover" sizes="40px" />
+                        ) : null}
                       </div>
-                    </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[14px] text-mp-text">{item.title}</p>
+                        <div className="flex items-center gap-2 text-[12px] text-mp-text-dim">
+                          {year && <span>{year}</span>}
+                          <span className="rounded-full border border-mp-border px-2 py-0.5">
+                            {item.type === "movie" ? "Film" : "Série"}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleQuickAdd(item)}
