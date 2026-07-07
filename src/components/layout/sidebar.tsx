@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS, isSearchVisible } from "@/components/layout/nav-items";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ProfileMenu } from "@/components/layout/profile-menu";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
 
 interface SidebarProps {
@@ -51,14 +51,10 @@ export function Sidebar({ watchlistCount, profileName, profileColor }: SidebarPr
           <span className="block font-heading text-[28px] text-mp-accent">{watchlistCount}</span>
           <span className="text-xs text-mp-text-dim">dans ma liste</span>
         </div>
-        <Link href="/profiles" className="flex items-center gap-2 px-1 text-sm text-mp-text-dim">
-          <Avatar className="h-6 w-6" style={{ backgroundColor: profileColor }}>
-            <AvatarFallback style={{ backgroundColor: profileColor }} className="text-white text-xs">
-              {profileName.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+        <div className="flex items-center gap-2 px-1 text-sm text-mp-text-dim">
+          <ProfileMenu profileName={profileName} profileColor={profileColor} avatarClassName="h-6 w-6" />
           {profileName}
-        </Link>
+        </div>
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ProfileMenu } from "@/components/layout/profile-menu";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
 import { isSearchVisible } from "@/components/layout/nav-items";
 
@@ -68,13 +68,7 @@ export function MobileTopBar({ profileName, profileColor }: MobileTopBarProps) {
               <Search size={20} strokeWidth={1.8} />
             </Link>
           )}
-          <Link href="/profiles" className="flex">
-            <Avatar className="h-6 w-6" style={{ backgroundColor: profileColor }}>
-              <AvatarFallback style={{ backgroundColor: profileColor }} className="text-white text-xs">
-                {profileName.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+          <ProfileMenu profileName={profileName} profileColor={profileColor} avatarClassName="h-6 w-6" />
         </div>
       </div>
 

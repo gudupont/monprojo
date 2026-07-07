@@ -9,6 +9,8 @@ services:
       DATABASE_URL: "file:/app/data/dev.db"
       TMDB_API_KEY: "${TMDB_API_KEY}"
       OMDB_API_KEY: "${OMDB_API_KEY}"
+      SESSION_SECRET: "${SESSION_SECRET}"
+      APP_PASSWORD_HASH: "${APP_PASSWORD_HASH}"
       WATCHPACK_POLLING: "true"
     volumes:
       - .:/app

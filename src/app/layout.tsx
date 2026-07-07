@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Instrument_Serif, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import { getActiveProfile } from "@/lib/session";
+import { isAuthenticated } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileTopBar } from "@/components/layout/mobile-top-bar";
@@ -30,7 +31,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const profile = await getActiveProfile();
+  const authenticated = await isAuthenticated();
+  const profile = authenticated ? await getActiveProfile() : null;
   const watchlistCount = profile
     ? await db.watchlistItem.count({ where: { profileId: profile.id } })
     : 0;

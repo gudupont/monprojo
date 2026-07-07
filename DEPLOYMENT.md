@@ -12,6 +12,8 @@ Le `Dockerfile` du repo est une image de **production** (multi-stage, build fig�
 # Première fois : copier le fichier d'env
 cp .env.example .env
 # Renseigner TMDB_API_KEY / OMDB_API_KEY dans .env
+# Générer APP_PASSWORD_HASH : node scripts/hash-password.mjs <mot-de-passe>
+# Générer SESSION_SECRET : openssl rand -hex 32
 
 # Lancer le serveur de dev
 docker compose -f docker-compose.dev.yml --env-file .env up
@@ -78,7 +80,10 @@ Les deux méthodes suivantes restent utiles en secours (repo public, DSM ancien 
    ```
    TMDB_API_KEY=xxxxx
    OMDB_API_KEY=xxxxx
+   SESSION_SECRET=xxxxx
+   APP_PASSWORD_HASH=xxxxx
    ```
+   `SESSION_SECRET` : chaîne aléatoire (ex. `openssl rand -hex 32`). `APP_PASSWORD_HASH` : généré via `node scripts/hash-password.mjs <mot-de-passe>` (voir section Authentification ci-dessous).
 5. Lancer le build (**Suivant** → **Compiler** puis **Terminé**). Container Manager exécute l'équivalent de `docker compose build && docker compose up -d`.
 6. Le volume nommé `monprojo-data` (déclaré dans `docker-compose.yml`) est créé automatiquement par Container Manager et persiste le fichier SQLite entre redémarrages/mises à jour du conteneur.
 7. Vérifier dans l'onglet **Conteneur** que `monprojo` est **En cours d'exécution**, puis tester `http://<IP-du-NAS>:3000`.
@@ -108,6 +113,17 @@ Pour une mise à jour : rebuild + `docker save` en local, réimporter l'image (e
 
 Le NAS Synology propose un reverse proxy intégré (**Panneau de configuration** → **Portail de connexion** → **Avancé** → **Reverse Proxy**) pour exposer `monprojo` sur un sous-domaine avec certificat Let's Encrypt géré par DSM, sans changer la conf de l'app : source `https://monprojo.mondomaine.tld:443` → destination `http://localhost:3000` (ou l'IP interne du NAS si le proxy tourne ailleurs).
 
-## 4. Sauvegarde
+## 4. Authentification
+
+L'app est protégée par un mot de passe unique (pas de comptes multiples). Deux variables d'environnement sont requises :
+
+- `SESSION_SECRET` : secret de signature des sessions (JWT HS256). Générer avec `openssl rand -hex 32`.
+- `APP_PASSWORD_HASH` : hash du mot de passe d'accès, jamais le mot de passe en clair. Générer avec :
+  ```bash
+  node scripts/hash-password.mjs "mon-mot-de-passe"
+  ```
+  Copier la sortie dans `APP_PASSWORD_HASH`. Pour changer le mot de passe : régénérer le hash et redéployer avec la nouvelle valeur.
+
+## 5. Sauvegarde
 
 La seule donnée à sauvegarder est le volume Docker (`monprojo-data` en méthode A, ou le dossier partagé monté en méthode B) : il contient l'unique fichier SQLite de l'application. Inclure ce volume/dossier dans **Hyper Backup** ou une tâche de sauvegarde du dossier partagé côté DSM.
