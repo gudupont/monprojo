@@ -9,9 +9,14 @@ import { getActiveProfile } from "@/lib/session";
 import { db } from "@/lib/db";
 import { parseSeasons, parseGenres } from "@/lib/progress";
 import { computeProgressPercent } from "@/lib/media-progress";
+import { getProfileProviders } from "@/lib/actions/provider";
+import { getRadarrStatus, checkInRadarr } from "@/lib/actions/radarr";
+import type { TmdbWatchProviders } from "@/lib/tmdb";
 import { Button } from "@/components/ui/button";
 import { PlanDialog } from "@/components/plan-dialog";
 import { BackLink } from "@/components/back-link";
+import { WatchProviders } from "@/components/watch-providers";
+import { RadarrButton } from "@/components/radarr-button";
 
 export default async function MediaDetailPage({
   params,
@@ -40,6 +45,15 @@ export default async function MediaDetailPage({
 
   const seasons = parseSeasons(media.seasonsJson);
   const genres = parseGenres(media.genres);
+
+  const watchProviders: TmdbWatchProviders = media.watchProvidersJson
+    ? JSON.parse(media.watchProvidersJson)
+    : { link: null, flatrate: [] };
+  const ownedProviderIds = profile ? new Set(await getProfileProviders(profile.id)) : new Set<number>();
+  const sortedProviders = [
+    ...watchProviders.flatrate.filter((p) => ownedProviderIds.has(p.providerId)),
+    ...watchProviders.flatrate.filter((p) => !ownedProviderIds.has(p.providerId)),
+  ];
   const { season: seasonParam } = await searchParams;
   const activeSeason = seasons.find((s) => s.season === Number(seasonParam)) ?? seasons[0];
 
@@ -71,6 +85,10 @@ export default async function MediaDetailPage({
     type === "tv" && profile
       ? await computeProgressPercent(media, profile.id, watchlistItem?.status ?? "TO_WATCH")
       : null;
+
+  const hasRadarrConfig = profile && type === "movie" ? await getRadarrStatus(profile.id) : false;
+  const alreadyInRadarr =
+    hasRadarrConfig && profile ? await checkInRadarr(profile.id, media.tmdbId) : false;
 
   return (
     <div className="px-4 pt-4 pb-10 md:px-10 md:pt-6">
@@ -131,6 +149,13 @@ export default async function MediaDetailPage({
               </form>
             )}
             <PlanDialog mediaId={media.id} title={media.title} />
+            {hasRadarrConfig && profile && (
+              <RadarrButton
+                profileId={profile.id}
+                tmdbId={media.tmdbId}
+                initiallyPresent={alreadyInRadarr}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -227,6 +252,8 @@ export default async function MediaDetailPage({
           </div>
         </div>
       )}
+
+      <WatchProviders link={watchProviders.link} providers={sortedProviders} />
 
       {detail.cast.length > 0 && (
         <div className="mt-9">

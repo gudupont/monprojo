@@ -32,3 +32,32 @@ export async function deletePlanEntry(entryId: string) {
   await db.planEntry.delete({ where: { id: entryId } });
   revalidatePath("/calendar");
 }
+
+export async function getOrCreateCalendarToken(): Promise<string> {
+  const profile = await getActiveProfile();
+  if (!profile) throw new Error("Aucun profil actif");
+
+  if (profile.calendarToken) return profile.calendarToken;
+
+  const token = crypto.randomUUID();
+  await db.profile.update({
+    where: { id: profile.id },
+    data: { calendarToken: token },
+  });
+
+  return token;
+}
+
+export async function regenerateCalendarToken(): Promise<string> {
+  const profile = await getActiveProfile();
+  if (!profile) throw new Error("Aucun profil actif");
+
+  const token = crypto.randomUUID();
+  await db.profile.update({
+    where: { id: profile.id },
+    data: { calendarToken: token },
+  });
+
+  revalidatePath("/calendar");
+  return token;
+}

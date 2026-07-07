@@ -11,7 +11,7 @@ const PUBLIC_API_PATHS = new Set(["/api/auth/login"]);
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (PUBLIC_PATHS.has(pathname) || PUBLIC_API_PATHS.has(pathname)) {
+  if (PUBLIC_PATHS.has(pathname) || PUBLIC_API_PATHS.has(pathname) || pathname.startsWith("/api/calendar/")) {
     return NextResponse.next();
   }
 

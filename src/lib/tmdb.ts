@@ -129,3 +129,77 @@ export async function getSeasonEpisodes(tmdbId: number, season: number): Promise
   const data = await tmdbFetch<TmdbSeasonDetailResponse>(`/tv/${tmdbId}/season/${season}`);
   return (data.episodes ?? []).map((e) => ({ episode: e.episode_number, title: e.name }));
 }
+
+export interface TmdbWatchProvider {
+  providerId: number;
+  name: string;
+  logoPath: string | null;
+}
+
+export interface TmdbWatchProviders {
+  link: string | null;
+  flatrate: TmdbWatchProvider[];
+}
+
+interface TmdbWatchProvidersResponse {
+  results?: Record<string, { link?: string; flatrate?: { provider_id: number; provider_name: string; logo_path: string | null }[] }>;
+}
+
+export async function getWatchProviders(tmdbId: number, type: TmdbMediaType): Promise<TmdbWatchProviders> {
+  const data = await tmdbFetch<TmdbWatchProvidersResponse>(`/${type}/${tmdbId}/watch/providers`);
+  const fr = data.results?.FR;
+  return {
+    link: fr?.link ?? null,
+    flatrate: (fr?.flatrate ?? []).map((p) => ({
+      providerId: p.provider_id,
+      name: p.provider_name,
+      logoPath: p.logo_path,
+    })),
+  };
+}
+
+interface TmdbProviderListItem {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string | null;
+  display_priorities?: Record<string, number>;
+}
+
+interface TmdbProviderListResponse {
+  results: TmdbProviderListItem[];
+}
+
+let availableProvidersCache: { data: TmdbWatchProvider[]; expiresAt: number } | null = null;
+const AVAILABLE_PROVIDERS_TTL_MS = 1000 * 60 * 60 * 24; // 24h
+
+export async function getAvailableProviders(): Promise<TmdbWatchProvider[]> {
+  if (availableProvidersCache && Date.now() < availableProvidersCache.expiresAt) {
+    return availableProvidersCache.data;
+  }
+
+  const [movies, tv] = await Promise.all([
+    tmdbFetch<TmdbProviderListResponse>("/watch/providers/movie", { watch_region: "FR" }),
+    tmdbFetch<TmdbProviderListResponse>("/watch/providers/tv", { watch_region: "FR" }),
+  ]);
+
+  const byId = new Map<number, { item: TmdbProviderListItem; priority: number }>();
+  for (const item of [...movies.results, ...tv.results]) {
+    const priority = item.display_priorities?.FR;
+    if (priority === undefined) continue;
+    const existing = byId.get(item.provider_id);
+    if (!existing || priority < existing.priority) {
+      byId.set(item.provider_id, { item, priority });
+    }
+  }
+
+  const data = Array.from(byId.values())
+    .sort((a, b) => a.priority - b.priority)
+    .map(({ item }) => ({
+      providerId: item.provider_id,
+      name: item.provider_name,
+      logoPath: item.logo_path,
+    }));
+
+  availableProvidersCache = { data, expiresAt: Date.now() + AVAILABLE_PROVIDERS_TTL_MS };
+  return data;
+}

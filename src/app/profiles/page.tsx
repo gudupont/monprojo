@@ -1,11 +1,21 @@
 import { db } from "@/lib/db";
 import { createProfile, selectProfile } from "@/lib/actions/profile";
+import { getProfileProviders } from "@/lib/actions/provider";
+import { getAvailableProviders } from "@/lib/tmdb";
+import { getActiveProfile } from "@/lib/session";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ProviderSelector } from "@/components/provider-selector";
+import { RadarrSettings } from "@/components/radarr-settings";
 
 export default async function ProfilesPage() {
   const profiles = await db.profile.findMany({ orderBy: { createdAt: "asc" } });
+  const activeProfile = await getActiveProfile();
+
+  const [availableProviders, selectedProviderIds] = activeProfile
+    ? await Promise.all([getAvailableProviders(), getProfileProviders(activeProfile.id)])
+    : [[], []];
 
   return (
     <div className="mx-auto max-w-md space-y-8">
@@ -33,6 +43,28 @@ export default async function ProfilesPage() {
         <Input name="name" placeholder="Nouveau profil" required />
         <Button type="submit">Créer</Button>
       </form>
+
+      {activeProfile && (
+        <div>
+          <h2 className="mb-3 text-lg font-semibold">Mes plateformes</h2>
+          <ProviderSelector
+            profileId={activeProfile.id}
+            providers={availableProviders}
+            initialSelectedIds={selectedProviderIds}
+          />
+        </div>
+      )}
+
+      {activeProfile && (
+        <div>
+          <h2 className="mb-3 text-lg font-semibold">Radarr</h2>
+          <RadarrSettings
+            profileId={activeProfile.id}
+            initialUrl={activeProfile.radarrUrl ?? ""}
+            hasConfig={Boolean(activeProfile.radarrUrl && activeProfile.radarrApiKey)}
+          />
+        </div>
+      )}
     </div>
   );
 }

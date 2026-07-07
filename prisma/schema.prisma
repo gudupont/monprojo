@@ -8,13 +8,34 @@ datasource db {
 }
 
 model Profile {
-  id             String          @id @default(cuid())
+  id             String            @id @default(cuid())
   name           String
   avatarColor    String
-  createdAt      DateTime        @default(now())
+  radarrUrl      String?
+  radarrApiKey   String?
+  calendarToken  String?           @unique
+  createdAt      DateTime          @default(now())
   watchlist      WatchlistItem[]
   planEntries    PlanEntry[]
   episodeWatches EpisodeWatch[]
+  providers      ProfileProvider[]
+}
+
+model Provider {
+  id       Int               @id
+  name     String
+  logoPath String?
+  profiles ProfileProvider[]
+}
+
+model ProfileProvider {
+  profileId  String
+  providerId Int
+
+  profile  Profile  @relation(fields: [profileId], references: [id])
+  provider Provider @relation(fields: [providerId], references: [id])
+
+  @@unique([profileId, providerId])
 }
 
 enum MediaType {
@@ -35,6 +56,7 @@ model Media {
   imdbRating     Float?
   genres         String?
   seasonsJson    String?
+  watchProvidersJson String?
   cachedAt       DateTime        @default(now())
   watchlist      WatchlistItem[]
   planEntries    PlanEntry[]

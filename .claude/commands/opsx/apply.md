@@ -52,6 +52,8 @@ Implement tasks from an OpenSpec change.
    - **spec-driven**: proposal, specs, design, tasks
    - Other schemas: follow the contextFiles from CLI output
 
+   **If `graphify-out/graph.json` exists**: run `graphify query "<task/change topic>"` to locate the actual files, functions, and cross-file relationships involved before touching code. Prefer this over raw grep for orienting.
+
 5. **Show current progress**
 
    Display:
@@ -143,6 +145,7 @@ What would you like to do?
 - Update task checkbox immediately after completing each task
 - Pause on errors, blockers, or unclear requirements - don't guess
 - Use contextFiles from CLI output, don't assume specific file names
+- If `graphify-out/graph.json` exists, run `graphify update .` after all tasks are done (or on pause) to keep the knowledge graph current with the code changes
 
 **Fluid Workflow Integration**
 

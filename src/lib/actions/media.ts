@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { getMediaDetail, type TmdbMediaType } from "@/lib/tmdb";
+import { getMediaDetail, getWatchProviders, type TmdbMediaType } from "@/lib/tmdb";
 import { getImdbRating } from "@/lib/omdb";
 
 const CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24h
@@ -26,6 +26,13 @@ export async function getOrRefreshMedia(tmdbId: number, type: TmdbMediaType) {
     }
   }
 
+  let watchProvidersJson: string | null = null;
+  try {
+    watchProvidersJson = JSON.stringify(await getWatchProviders(tmdbId, type));
+  } catch {
+    watchProvidersJson = null;
+  }
+
   const genres = detail.genres.join(",") || null;
   const seasonsJson = detail.seasons ? JSON.stringify(detail.seasons) : null;
 
@@ -43,6 +50,7 @@ export async function getOrRefreshMedia(tmdbId: number, type: TmdbMediaType) {
       imdbRating,
       genres,
       seasonsJson,
+      watchProvidersJson,
     },
     update: {
       imdbId: detail.imdbId,
@@ -54,6 +62,7 @@ export async function getOrRefreshMedia(tmdbId: number, type: TmdbMediaType) {
       imdbRating,
       genres,
       seasonsJson,
+      watchProvidersJson,
       cachedAt: new Date(),
     },
   });

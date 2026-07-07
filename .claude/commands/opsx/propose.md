@@ -62,6 +62,7 @@ When ready to implement, run /opsx:apply
         - `outputPath`: Where to write the artifact
         - `dependencies`: Completed artifacts to read for context
       - Read any completed dependency files for context
+      - **If artifact is `design` or `tasks`** and `graphify-out/graph.json` exists: run `graphify query "<change description or artifact topic>"` first to ground the artifact in actual codebase structure (affected modules, existing patterns, cross-file relationships) instead of guessing from scratch
       - Create the artifact file using `template` as the structure
       - Apply `context` and `rules` as constraints - but do NOT copy them into the file
       - Show brief progress: "Created <artifact-id>"

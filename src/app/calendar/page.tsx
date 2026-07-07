@@ -3,6 +3,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { deletePlanEntry } from "@/lib/actions/calendar";
 import { Button } from "@/components/ui/button";
+import { CalendarSubscription } from "@/components/calendar-subscription";
 
 const MONTHS_ABBR = [
   "janv.",
@@ -39,6 +40,8 @@ export default async function CalendarPage() {
     <div className="px-4 pt-5 md:px-10 md:pt-0">
       <h1 className="mb-1.5 font-heading text-[30px] text-mp-text md:text-[38px]">Calendrier</h1>
       <div className="mb-6 text-sm text-mp-text-dim">Les prochaines sorties de tes séries</div>
+
+      <CalendarSubscription />
 
       {entries.length === 0 && (
         <p className="pb-10 text-sm text-mp-text-dim">

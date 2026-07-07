@@ -155,3 +155,4 @@ Target archive directory already exists.
 - Show clear summary of what happened
 - If sync is requested, use the Skill tool to invoke `openspec-sync-specs` (agent-driven)
 - If delta specs exist, always run the sync assessment and show the combined summary before prompting
+- If `graphify-out/graph.json` exists and specs were synced, run `graphify update .` after archiving to keep the knowledge graph current
