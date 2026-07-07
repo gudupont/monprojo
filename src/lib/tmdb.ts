@@ -83,6 +83,56 @@ export async function searchMedia(query: string): Promise<TmdbSearchResult[]> {
     }));
 }
 
+interface TmdbFindResponse {
+  movie_results: TmdbMultiSearchItem[];
+  tv_results: TmdbMultiSearchItem[];
+}
+
+export async function findByImdbId(imdbId: string): Promise<TmdbSearchResult | null> {
+  const data = await tmdbFetch<TmdbFindResponse>(`/find/${imdbId}`, { external_source: "imdb_id" });
+  const item = data.movie_results[0]
+    ? { ...data.movie_results[0], media_type: "movie" as const }
+    : data.tv_results[0]
+      ? { ...data.tv_results[0], media_type: "tv" as const }
+      : null;
+  if (!item) return null;
+
+  return {
+    tmdbId: item.id,
+    type: item.media_type,
+    title: item.title ?? item.name ?? "Titre inconnu",
+    poster: item.poster_path ? `${TMDB_IMAGE_BASE_URL}${item.poster_path}` : null,
+    overview: item.overview,
+    releaseDate: item.release_date ?? item.first_air_date ?? null,
+    tmdbRating: item.vote_average,
+  };
+}
+
+export async function searchMediaByTitleAndYear(
+  title: string,
+  year: number | null,
+  type: TmdbMediaType,
+): Promise<TmdbSearchResult | null> {
+  const path = type === "movie" ? "/search/movie" : "/search/tv";
+  const params: Record<string, string> = { query: title };
+  if (year) {
+    params[type === "movie" ? "year" : "first_air_date_year"] = String(year);
+  }
+  const data = await tmdbFetch<{ results: TmdbMultiSearchItem[] }>(path, params);
+  const item = data.results[0];
+  if (!item) return null;
+
+  return {
+    tmdbId: item.id,
+    type,
+    title: item.title ?? item.name ?? "Titre inconnu",
+    poster: item.poster_path ? `${TMDB_IMAGE_BASE_URL}${item.poster_path}` : null,
+    overview: item.overview,
+    releaseDate: item.release_date ?? item.first_air_date ?? null,
+    tmdbRating: item.vote_average,
+  };
+}
+
 interface TmdbDetailResponse {
   id: number;
   title?: string;

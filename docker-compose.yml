@@ -9,6 +9,7 @@ services:
       OMDB_API_KEY: "${OMDB_API_KEY}"
       SESSION_SECRET: "${SESSION_SECRET}"
       APP_PASSWORD_HASH: "${APP_PASSWORD_HASH}"
+      PLEX_SYNC_SECRET: "${PLEX_SYNC_SECRET}"
     volumes:
       - monprojo-data:/app/data
     restart: unless-stopped

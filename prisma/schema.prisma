@@ -15,6 +15,11 @@ model Profile {
   radarrApiKey   String?
   sonarrUrl      String?
   sonarrApiKey   String?
+  plexAccountToken String?
+  plexServerUrl    String?
+  plexServerToken  String?
+  lastPlexSyncAt   DateTime?
+  plexSyncError    String?
   calendarToken  String?           @unique
   createdAt      DateTime          @default(now())
   watchlist      WatchlistItem[]

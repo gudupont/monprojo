@@ -9,15 +9,21 @@ import { Input } from "@/components/ui/input";
 import { ProviderSelector } from "@/components/provider-selector";
 import { RadarrSettings } from "@/components/radarr-settings";
 import { SonarrSettings } from "@/components/sonarr-settings";
+import { PlexSettings } from "@/components/plex-settings";
+import { getPlexStatus, type PlexStatus } from "@/lib/actions/plex";
 import { CollapsibleSection } from "@/components/collapsible-section";
 
 export default async function ProfilesPage() {
   const profiles = await db.profile.findMany({ orderBy: { createdAt: "asc" } });
   const activeProfile = await getActiveProfile();
 
-  const [availableProviders, selectedProviderIds] = activeProfile
-    ? await Promise.all([getAvailableProviders(), getProfileProviders(activeProfile.id)])
-    : [[], []];
+  const [availableProviders, selectedProviderIds, plexStatus] = activeProfile
+    ? await Promise.all([
+        getAvailableProviders(),
+        getProfileProviders(activeProfile.id),
+        getPlexStatus(activeProfile.id),
+      ])
+    : [[], [], null as PlexStatus | null];
 
   return (
     <div className="mx-auto max-w-md space-y-6">
@@ -74,6 +80,20 @@ export default async function ProfilesPage() {
             profileId={activeProfile.id}
             initialUrl={activeProfile.sonarrUrl ?? ""}
             hasConfig={Boolean(activeProfile.sonarrUrl && activeProfile.sonarrApiKey)}
+          />
+        </div>
+      )}
+
+      {activeProfile && plexStatus && (
+        <div>
+          <h2 className="mb-3 text-lg font-semibold">Plex</h2>
+          <PlexSettings
+            profileId={activeProfile.id}
+            initialServerUrl={activeProfile.plexServerUrl ?? ""}
+            hasAccountConfig={plexStatus.hasAccountConfig}
+            hasServerConfig={plexStatus.hasServerConfig}
+            lastSyncAt={plexStatus.lastSyncAt}
+            syncError={plexStatus.syncError}
           />
         </div>
       )}
