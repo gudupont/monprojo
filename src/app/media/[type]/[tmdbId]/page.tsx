@@ -17,6 +17,7 @@ import { PlanDialog } from "@/components/plan-dialog";
 import { BackLink } from "@/components/back-link";
 import { WatchProviders } from "@/components/watch-providers";
 import { RadarrButton } from "@/components/radarr-button";
+import { SeasonSelect } from "@/components/season-select";
 
 export default async function MediaDetailPage({
   params,
@@ -72,6 +73,13 @@ export default async function MediaDetailPage({
     }
   }
   const titleByEpisode = new Map(episodeTitles.map((e) => [e.episode, e.title]));
+  const airDateByEpisode = new Map(episodeTitles.map((e) => [e.episode, e.airDate]));
+
+  function formatAirDate(airDate: string | null | undefined): string {
+    if (!airDate) return "N/A";
+    const [year, month, day] = airDate.split("-");
+    return `${day}/${month}/${year}`;
+  }
 
   const seasonWatchedCount = activeSeason
     ? episodeWatches.filter((e) => e.season === activeSeason.season).length
@@ -160,6 +168,8 @@ export default async function MediaDetailPage({
         </div>
       </div>
 
+      <WatchProviders link={watchProviders.link} providers={sortedProviders} />
+
       {type === "tv" && seasons.length === 0 && (
         <div className="mt-8 rounded-xl border border-mp-border bg-mp-surface p-6 text-sm text-mp-text-dim">
           Aucun détail épisode disponible pour cette série.
@@ -177,20 +187,8 @@ export default async function MediaDetailPage({
             </div>
           )}
 
-          <div className="mb-4 flex gap-2 overflow-x-auto">
-            {seasons.map((s) => (
-              <a
-                key={s.season}
-                href={`?season=${s.season}`}
-                className={`whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-semibold ${
-                  s.season === activeSeason.season
-                    ? "bg-mp-accent text-mp-accent-ink"
-                    : "border border-mp-border bg-mp-surface text-mp-text-dim"
-                }`}
-              >
-                Saison {s.season}
-              </a>
-            ))}
+          <div className="mb-4">
+            <SeasonSelect seasons={seasons} activeSeason={activeSeason.season} />
           </div>
 
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-mp-border bg-mp-surface p-4">
@@ -241,9 +239,14 @@ export default async function MediaDetailPage({
                     >
                       {watched && <Check size={13} strokeWidth={3} />}
                     </span>
-                    <span className="text-sm text-mp-text">
-                      Épisode {ep}
-                      {title ? ` – ${title}` : ""}
+                    <span className="flex flex-1 items-center justify-between gap-3 text-sm text-mp-text">
+                      <span>
+                        Épisode {ep}
+                        {title ? ` – ${title}` : ""}
+                      </span>
+                      <span className="shrink-0 text-xs font-semibold text-mp-text-dim">
+                        {formatAirDate(airDateByEpisode.get(ep))}
+                      </span>
                     </span>
                   </button>
                 </form>
@@ -252,8 +255,6 @@ export default async function MediaDetailPage({
           </div>
         </div>
       )}
-
-      <WatchProviders link={watchProviders.link} providers={sortedProviders} />
 
       {detail.cast.length > 0 && (
         <div className="mt-9">
