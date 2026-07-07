@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProviderSelector } from "@/components/provider-selector";
 import { RadarrSettings } from "@/components/radarr-settings";
+import { SonarrSettings } from "@/components/sonarr-settings";
 import { CollapsibleSection } from "@/components/collapsible-section";
 
 export default async function ProfilesPage() {
@@ -62,6 +63,17 @@ export default async function ProfilesPage() {
             profileId={activeProfile.id}
             initialUrl={activeProfile.radarrUrl ?? ""}
             hasConfig={Boolean(activeProfile.radarrUrl && activeProfile.radarrApiKey)}
+          />
+        </div>
+      )}
+
+      {activeProfile && (
+        <div>
+          <h2 className="mb-3 text-lg font-semibold">Sonarr</h2>
+          <SonarrSettings
+            profileId={activeProfile.id}
+            initialUrl={activeProfile.sonarrUrl ?? ""}
+            hasConfig={Boolean(activeProfile.sonarrUrl && activeProfile.sonarrApiKey)}
           />
         </div>
       )}

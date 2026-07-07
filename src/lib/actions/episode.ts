@@ -23,32 +23,51 @@ export async function toggleEpisodeWatched(mediaId: string, season: number, epis
   revalidatePath("/", "layout");
 }
 
-export async function markSeasonWatched(mediaId: string, season: number, episodeNumbers: number[]) {
+export async function markSeasonWatched(
+  mediaId: string,
+  season: number,
+  episodeNumbers: number[],
+  additionalSeasons?: { season: number; episodeNumbers: number[] }[],
+) {
   const profile = await getActiveProfile();
   if (!profile) throw new Error("Aucun profil actif");
 
+  const seasonsToMark = [{ season, episodeNumbers }, ...(additionalSeasons ?? [])];
+
   await db.$transaction(
-    episodeNumbers.map((episode) =>
-      db.episodeWatch.upsert({
-        where: {
-          mediaId_profileId_season_episode: { mediaId, profileId: profile.id, season, episode },
-        },
-        create: { mediaId, profileId: profile.id, season, episode },
-        update: {},
-      }),
+    seasonsToMark.flatMap(({ season: s, episodeNumbers: eps }) =>
+      eps.map((episode) =>
+        db.episodeWatch.upsert({
+          where: {
+            mediaId_profileId_season_episode: { mediaId, profileId: profile.id, season: s, episode },
+          },
+          create: { mediaId, profileId: profile.id, season: s, episode },
+          update: {},
+        }),
+      ),
     ),
   );
 
   revalidatePath("/", "layout");
 }
 
-export async function unmarkSeasonWatched(mediaId: string, season: number) {
+export async function unmarkSeasonWatched(
+  mediaId: string,
+  season: number,
+  additionalSeasons?: { season: number }[],
+) {
   const profile = await getActiveProfile();
   if (!profile) throw new Error("Aucun profil actif");
 
-  await db.episodeWatch.deleteMany({
-    where: { mediaId, profileId: profile.id, season },
-  });
+  const seasons = [season, ...(additionalSeasons ?? []).map((s) => s.season)];
+
+  await db.$transaction(
+    seasons.map((s) =>
+      db.episodeWatch.deleteMany({
+        where: { mediaId, profileId: profile.id, season: s },
+      }),
+    ),
+  );
 
   revalidatePath("/", "layout");
 }

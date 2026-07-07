@@ -4,20 +4,23 @@ import { Bookmark, Check } from "lucide-react";
 import { getMediaDetail, getSeasonEpisodes, type TmdbEpisodeSummary } from "@/lib/tmdb";
 import { getOrRefreshMedia } from "@/lib/actions/media";
 import { toggleWatchlist, toggleMovieWatched } from "@/lib/actions/watchlist";
-import { toggleEpisodeWatched, markSeasonWatched, unmarkSeasonWatched } from "@/lib/actions/episode";
+import { toggleEpisodeWatched } from "@/lib/actions/episode";
 import { getActiveProfile } from "@/lib/session";
 import { db } from "@/lib/db";
-import { parseSeasons, parseGenres } from "@/lib/progress";
+import { parseSeasons, parseGenres, findDefaultSeason } from "@/lib/progress";
 import { computeProgressPercent } from "@/lib/media-progress";
 import { getProfileProviders } from "@/lib/actions/provider";
 import { getRadarrStatus, checkInRadarr } from "@/lib/actions/radarr";
+import { getSonarrStatus, checkInSonarr } from "@/lib/actions/sonarr";
 import type { TmdbWatchProviders } from "@/lib/tmdb";
 import { Button } from "@/components/ui/button";
 import { PlanDialog } from "@/components/plan-dialog";
 import { BackLink } from "@/components/back-link";
 import { WatchProviders } from "@/components/watch-providers";
 import { RadarrButton } from "@/components/radarr-button";
+import { SonarrButton } from "@/components/sonarr-button";
 import { SeasonSelect } from "@/components/season-select";
+import { SeasonWatchButton } from "@/components/season-watch-confirm-modal";
 
 export default async function MediaDetailPage({
   params,
@@ -55,14 +58,21 @@ export default async function MediaDetailPage({
     ...watchProviders.flatrate.filter((p) => ownedProviderIds.has(p.providerId)),
     ...watchProviders.flatrate.filter((p) => !ownedProviderIds.has(p.providerId)),
   ];
-  const { season: seasonParam } = await searchParams;
-  const activeSeason = seasons.find((s) => s.season === Number(seasonParam)) ?? seasons[0];
-
   const episodeWatches =
     profile && type === "tv"
       ? await db.episodeWatch.findMany({ where: { mediaId: media.id, profileId: profile.id } })
       : [];
   const watchedSet = new Set(episodeWatches.map((e) => `${e.season}-${e.episode}`));
+  const watchedCounts = new Map<number, number>();
+  for (const e of episodeWatches) {
+    watchedCounts.set(e.season, (watchedCounts.get(e.season) ?? 0) + 1);
+  }
+
+  const { season: seasonParam } = await searchParams;
+  const activeSeason =
+    seasons.find((s) => s.season === Number(seasonParam)) ??
+    findDefaultSeason(seasons, watchedCounts) ??
+    seasons[0];
 
   let episodeTitles: TmdbEpisodeSummary[] = [];
   if (type === "tv" && activeSeason) {
@@ -89,6 +99,14 @@ export default async function MediaDetailPage({
     : 0;
   const seasonFullyWatched = activeSeason ? seasonWatchedCount >= activeSeason.episodeCount : false;
 
+  const previousSeasons = activeSeason ? seasons.filter((s) => s.season < activeSeason.season) : [];
+  const previousSeasonsToWatch = previousSeasons
+    .filter((s) => episodeWatches.filter((e) => e.season === s.season).length < s.episodeCount)
+    .map((s) => ({ season: s.season, episodeNumbers: Array.from({ length: s.episodeCount }, (_, i) => i + 1) }));
+  const previousSeasonsToUnwatch = previousSeasons
+    .filter((s) => episodeWatches.some((e) => e.season === s.season))
+    .map((s) => ({ season: s.season }));
+
   const globalPercent =
     type === "tv" && profile
       ? await computeProgressPercent(media, profile.id, watchlistItem?.status ?? "TO_WATCH")
@@ -97,6 +115,10 @@ export default async function MediaDetailPage({
   const hasRadarrConfig = profile && type === "movie" ? await getRadarrStatus(profile.id) : false;
   const alreadyInRadarr =
     hasRadarrConfig && profile ? await checkInRadarr(profile.id, media.tmdbId) : false;
+
+  const hasSonarrConfig = profile && type === "tv" ? await getSonarrStatus(profile.id) : false;
+  const alreadyInSonarr =
+    hasSonarrConfig && profile ? await checkInSonarr(profile.id, media.tmdbId) : false;
 
   return (
     <div className="px-4 pt-4 pb-10 md:px-10 md:pt-6">
@@ -164,6 +186,13 @@ export default async function MediaDetailPage({
                 initiallyPresent={alreadyInRadarr}
               />
             )}
+            {hasSonarrConfig && profile && (
+              <SonarrButton
+                profileId={profile.id}
+                tmdbId={media.tmdbId}
+                initiallyPresent={alreadyInSonarr}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -199,24 +228,21 @@ export default async function MediaDetailPage({
               <span className="text-xs font-semibold text-mp-text-dim">{seasonPercent}%</span>
             </div>
             {seasonFullyWatched ? (
-              <form action={unmarkSeasonWatched.bind(null, media.id, activeSeason.season)}>
-                <Button type="submit" size="sm" variant="secondary">
-                  Marquer la saison comme non vue
-                </Button>
-              </form>
+              <SeasonWatchButton
+                mediaId={media.id}
+                season={activeSeason.season}
+                direction="unwatch"
+                episodeNumbers={Array.from({ length: activeSeason.episodeCount }, (_, i) => i + 1)}
+                previousSeasons={previousSeasonsToUnwatch}
+              />
             ) : (
-              <form
-                action={markSeasonWatched.bind(
-                  null,
-                  media.id,
-                  activeSeason.season,
-                  Array.from({ length: activeSeason.episodeCount }, (_, i) => i + 1),
-                )}
-              >
-                <Button type="submit" size="sm" variant="secondary">
-                  Marquer la saison comme vue
-                </Button>
-              </form>
+              <SeasonWatchButton
+                mediaId={media.id}
+                season={activeSeason.season}
+                direction="watch"
+                episodeNumbers={Array.from({ length: activeSeason.episodeCount }, (_, i) => i + 1)}
+                previousSeasons={previousSeasonsToWatch}
+              />
             )}
           </div>
 
