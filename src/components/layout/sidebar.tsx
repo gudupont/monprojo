@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS, SEARCH_VISIBLE_PATHS } from "@/components/layout/nav-items";
+import { NAV_ITEMS, isSearchVisible } from "@/components/layout/nav-items";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
 
@@ -26,9 +26,7 @@ export function Sidebar({ watchlistCount, profileName, profileColor }: SidebarPr
         <span className="font-heading text-xl italic text-mp-text">MonProjo</span>
       </div>
 
-      {SEARCH_VISIBLE_PATHS.includes(pathname as (typeof SEARCH_VISIBLE_PATHS)[number]) && (
-        <SearchAutocomplete variant="header" />
-      )}
+      {isSearchVisible(pathname) && <SearchAutocomplete variant="header" />}
 
       <nav className="flex flex-col gap-1">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {

@@ -110,8 +110,8 @@ export function SearchAutocomplete({ variant = "page", initialQuery = "", initia
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="flex items-center gap-2.5 rounded-xl border border-mp-border bg-mp-surface px-4 py-3">
-        <Search size={18} strokeWidth={1.8} className="shrink-0 text-mp-text-dim" />
+      <div className="flex items-center gap-2.5 rounded-xl border-2 border-mp-border bg-mp-surface-2 px-4 py-3 shadow-sm">
+        <Search size={18} strokeWidth={2} className="shrink-0 text-mp-text" />
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -119,9 +119,9 @@ export function SearchAutocomplete({ variant = "page", initialQuery = "", initia
           onKeyDown={handleKeyDown}
           placeholder={variant === "header" ? "Rechercher…" : "Un titre, une série…"}
           aria-label="Recherche"
-          className="flex-1 bg-transparent text-[15px] text-mp-text outline-none placeholder:text-mp-text-dim"
+          className="flex-1 bg-transparent text-[15px] font-medium text-mp-text outline-none placeholder:text-mp-text-dim"
         />
-        {loading && <Loader2 size={16} className="shrink-0 animate-spin text-mp-text-dim" />}
+        {loading && <Loader2 size={16} className="shrink-0 animate-spin text-mp-text" />}
       </div>
 
       {open && (
@@ -159,7 +159,7 @@ export function SearchAutocomplete({ variant = "page", initialQuery = "", initia
                       onClick={() => handleQuickAdd(item)}
                       disabled={addState === "loading" || addState === "added" || addState === "already-added"}
                       aria-label={`Ajouter ${item.title} à la watchlist`}
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-mp-border text-mp-text-dim disabled:opacity-70"
+                      className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-mp-border text-mp-text-dim disabled:cursor-not-allowed disabled:opacity-70"
                     >
                       {addState === "loading" && <Loader2 size={16} className="animate-spin" />}
                       {addState === "idle" && <Plus size={16} />}
