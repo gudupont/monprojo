@@ -64,12 +64,17 @@ Implement tasks from an OpenSpec change.
    - Remaining tasks overview
    - Dynamic instruction from CLI
 
-6. **Implement tasks (loop until done or blocked)**
+6. **Implement tasks (loop until done or blocked) — driven by `superpowers`**
+
+   OpenSpec tells you WHAT to build next (the task list); `superpowers` skills govern HOW each task gets built. Do not skip these invocations even for small tasks.
 
    For each pending task:
    - Show which task is being worked on
+   - Invoke the Skill tool with `skill: "superpowers:test-driven-development"` before writing implementation code — write the failing test first, then the code that makes it pass
    - Make the code changes required
    - Keep changes minimal and focused
+   - If a bug, test failure, or unexpected behavior shows up, invoke `skill: "superpowers:systematic-debugging"` before proposing a fix — do not guess at fixes
+   - Before marking the task complete, invoke `skill: "superpowers:verification-before-completion"` and run the verification it prescribes (tests/manual check) — only mark done after evidence, not assertion
    - Mark task complete in the tasks file: `- [ ]` → `- [x]`
    - Continue to next task
 
@@ -147,6 +152,7 @@ What would you like to do?
 - Update task checkbox immediately after completing each task
 - Pause on errors, blockers, or unclear requirements - don't guess
 - Use contextFiles from CLI output, don't assume specific file names
+- **Never skip the superpowers invocations in step 6** (TDD before code, systematic-debugging on errors, verification-before-completion before checking a task off) — this is what keeps development methodology consistent regardless of which OpenSpec change is active
 
 **Fluid Workflow Integration**
 

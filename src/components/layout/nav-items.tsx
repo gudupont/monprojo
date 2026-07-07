@@ -8,4 +8,8 @@ export const NAV_ITEMS = [
   { href: "/decide", label: "Décider", icon: Dices },
 ] as const;
 
-export const SEARCH_VISIBLE_PATHS = ["/", "/watchlist", "/calendar"] as const;
+export const SEARCH_HIDDEN_PATHS = ["/search"] as const;
+
+export function isSearchVisible(pathname: string): boolean {
+  return !SEARCH_HIDDEN_PATHS.includes(pathname as (typeof SEARCH_HIDDEN_PATHS)[number]);
+}

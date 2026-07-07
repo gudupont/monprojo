@@ -24,7 +24,11 @@ When ready to implement, run /opsx:apply
 
 **Steps**
 
-1. **If no clear input provided, ask what they want to build**
+1. **Invoke `superpowers:brainstorming` first**
+
+   Before creating the change or any artifact, invoke the Skill tool with `skill: "superpowers:brainstorming"` to explore intent, requirements, and design options with the user. OpenSpec artifacts (proposal/design/tasks) are written AFTER this exploration, not instead of it.
+
+2. **If no clear input provided, ask what they want to build**
 
    Use the **AskUserQuestion tool** (open-ended, no preset options) to ask:
    > "What change do you want to work on? Describe what you want to build or fix."
@@ -33,13 +37,13 @@ When ready to implement, run /opsx:apply
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Create the change directory**
+3. **Create the change directory**
    ```bash
    openspec new change "<name>"
    ```
    This creates a scaffolded change at `openspec/changes/<name>/` with `.openspec.yaml`.
 
-3. **Get the artifact build order**
+4. **Get the artifact build order**
    ```bash
    openspec status --change "<name>" --json
    ```
@@ -47,7 +51,7 @@ When ready to implement, run /opsx:apply
    - `applyRequires`: array of artifact IDs needed before implementation (e.g., `["tasks"]`)
    - `artifacts`: list of all artifacts with their status and dependencies
 
-4. **Create artifacts in sequence until apply-ready**
+5. **Create artifacts in sequence until apply-ready**
 
    Use the **TodoWrite tool** to track progress through the artifacts.
 
@@ -79,7 +83,9 @@ When ready to implement, run /opsx:apply
       - Use **AskUserQuestion tool** to clarify
       - Then continue with creation
 
-5. **Show final status**
+   d. **When creating `tasks.md`**, write each task so it names the concrete deliverable, not the process — the process (TDD, systematic debugging, verification) is enforced by `/opsx:apply` via `superpowers`, not spelled out per task.
+
+6. **Show final status**
    ```bash
    openspec status --change "<name>"
    ```
@@ -108,3 +114,9 @@ After completing all artifacts, summarize:
 - If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next
+
+**Superpowers Integration**
+
+- OpenSpec owns task tracking (what to build, in what order). Superpowers owns the development methodology (how each task gets built).
+- This skill invokes `superpowers:brainstorming` up front so design decisions happen before artifacts are written.
+- `/opsx:apply` (openspec-apply-change) invokes `superpowers:test-driven-development`, `superpowers:systematic-debugging`, and `superpowers:verification-before-completion` per task — no action needed here beyond keeping tasks.md scoped to deliverables.
