@@ -123,6 +123,19 @@ export async function removeFromWatchlist(itemId: string) {
   });
 
   revalidatePath("/watchlist");
+  revalidatePath("/");
+}
+
+export async function hideFromContinueWatching(itemId: string) {
+  const profile = await getActiveProfile();
+  if (!profile) throw new Error("Aucun profil actif");
+
+  await db.watchlistItem.update({
+    where: { id: itemId, profileId: profile.id },
+    data: { hiddenFromContinue: true },
+  });
+
+  revalidatePath("/");
 }
 
 export async function getWatchlistItemsByActor(actorTmdbId: number, excludeMediaId: string) {

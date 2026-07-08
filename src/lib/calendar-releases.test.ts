@@ -34,6 +34,7 @@ function makeWatchlistItem(media: Media, status: WatchStatus = "TO_WATCH"): Watc
     status,
     addedAt: new Date(),
     watchedAt: null,
+    hiddenFromContinue: false,
     media,
   };
 }

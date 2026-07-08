@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import { getActiveProfile } from "@/lib/session";
 import { db } from "@/lib/db";
 import { computeProgressPercent } from "@/lib/media-progress";
+import { hideFromContinueWatching } from "@/lib/actions/watchlist";
 import { MediaCard } from "@/components/media-card";
+import { Button } from "@/components/ui/button";
 
 const MONTHS_ABBR = [
   "janv.",
@@ -50,7 +52,9 @@ export default async function Home() {
     })),
   );
 
-  const continueItems = withProgress.filter(({ progress }) => progress > 0 && progress < 100).slice(0, 6);
+  const continueItems = withProgress
+    .filter(({ item, progress }) => progress > 0 && progress < 100 && !item.hiddenFromContinue)
+    .slice(0, 6);
   const watchlistPreview = withProgress.slice(0, 4);
 
   const upcomingEntries = await db.planEntry.findMany({
@@ -83,6 +87,16 @@ export default async function Home() {
                   releaseDate={item.media.releaseDate}
                   tmdbRating={item.media.tmdbRating}
                   progressPercent={progress}
+                  hoverActions={
+                    <form action={hideFromContinueWatching.bind(null, item.id)}>
+                      <Button type="submit" size="icon-sm" variant="ghost" aria-label="Retirer de « Continuer à regarder »">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </Button>
+                    </form>
+                  }
                 />
               </div>
             ))}
@@ -137,9 +151,6 @@ export default async function Home() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-bold text-mp-text">{entry.media.title}</div>
-                  <div className="mt-0.5 text-xs text-mp-text-dim">
-                    {entry.scheduledAt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-                  </div>
                 </div>
               </Link>
             ))}

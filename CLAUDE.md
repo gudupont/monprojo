@@ -47,8 +47,12 @@ Lors de l'assistance sur ce projet, l'IA doit configurer son comportement autour
 * **Rôle :** Maintenir le contexte architectural du projet sur le long terme. Cartographier les flux de navigation (Accueil, Ma liste, Recherche, Calendrier, Décider) et documenter les décisions techniques au fil des itérations.
 
 ## Tests Automatisés
-### Outil : MCP Playwright
-* **Stratégie :** Utiliser le Server MCP Playwright pour écrire, exécuter et débugger les tests End-to-End (E2E).
+### Outil : MCP Playwright (obligatoire)
+* **Règle stricte :** Tout test manuel ou de vérification (feature terminée, bugfix, régression) DOIT passer par les outils `mcp__plugin_playwright_playwright__*` (navigate, snapshot, click, type, fill_form, evaluate, console_messages, network_requests, take_screenshot...). N'utilise PAS de scripts `curl`, de `fetch` Node ad hoc, ni un autre navigateur/outil pour vérifier le comportement de l'UI.
+* **Avant de tester :** lancer le serveur dev (`npm run dev`, port 3000) si non déjà démarré, puis `browser_navigate` vers `http://localhost:3000`.
+* **Authentification :** passer par le formulaire réel sur `/login` (voir `src/app/login`, `src/app/api/auth/login`) via `browser_fill_form` / `browser_click` — ne pas injecter de cookie de session à la main sauf si le test l'exige explicitement.
+* **Voir aussi :** skill projet `.claude/skills/test-playwright-mcp/SKILL.md` pour le déroulé détaillé (démarrage serveur, login, snapshot avant clic, vérification console/réseau).
+* **Cas des specs `e2e/*.spec.ts` (CLI `@playwright/test`) :** ce sont des tests de non-régression versionnés (`npm run test:e2e`), pas le canal d'exploration interactive. Garde-les à jour si tu modifies le comportement qu'ils couvrent, mais pour explorer/déboguer/valider une feature en cours, utilise le MCP Playwright ci-dessus.
 * **Cas d'usage critiques à tester :**
   * Bascule de navigation entre les écrans principaux (Home, Detail, Watchlist, Calendar, Decide).
   * Ajout, suppression et mise à jour de la progression d'un film/série dans la Watchlist.

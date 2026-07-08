@@ -116,6 +116,7 @@ model WatchlistItem {
   status    WatchStatus @default(TO_WATCH)
   addedAt   DateTime    @default(now())
   watchedAt DateTime?
+  hiddenFromContinue Boolean @default(false)
 
   media   Media   @relation(fields: [mediaId], references: [id])
   profile Profile @relation(fields: [profileId], references: [id])
