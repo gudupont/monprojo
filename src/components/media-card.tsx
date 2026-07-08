@@ -57,22 +57,17 @@ export function MediaCard({
         <Link href={`/media/${normalizedType}/${tmdbId}`} className="line-clamp-1 text-sm font-medium">
           {title}
         </Link>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full border border-mp-border px-2 py-1 text-xs font-semibold text-mp-text-dim">
+        <div className="flex flex-nowrap items-center gap-1.5">
+          <span className="min-w-0 truncate rounded-full border border-mp-border px-2 py-1 text-xs font-semibold text-mp-text-dim">
             {normalizedType === "movie" ? "Film" : "Série"}
+            {year ? ` · ${year}` : ""}
           </span>
-          {year && (
-            <span className="rounded-full border border-mp-border px-2 py-1 text-xs font-semibold text-mp-text-dim">
-              {year}
-            </span>
-          )}
           {tmdbRating ? (
-            <span className="rounded-full border border-mp-border px-2 py-1 text-xs font-bold text-mp-accent">
+            <span className="shrink-0 rounded-full border border-mp-border px-2 py-1 text-xs font-bold text-mp-accent">
               ★ {tmdbRating.toFixed(1)}
             </span>
-          ) : null}
-          {imdbRating ? (
-            <span className="rounded-full border border-mp-border px-2 py-1 text-xs font-semibold text-mp-text-dim">
+          ) : imdbRating ? (
+            <span className="shrink-0 rounded-full border border-mp-border px-2 py-1 text-xs font-bold text-mp-accent">
               IMDb {imdbRating.toFixed(1)}
             </span>
           ) : null}
