@@ -99,6 +99,7 @@ export async function removeFromWatchlist(itemId: string) {
   });
 
   revalidatePath("/watchlist");
+  revalidatePath("/");
 }
 
 export async function getWatchlistItemsByActor(actorTmdbId: number, excludeMediaId: string) {
