@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { getActiveProfile } from "@/lib/session";
 import { getOrRefreshMedia } from "@/lib/actions/media";
+import { parseSeasons } from "@/lib/progress";
 import type { TmdbMediaType } from "@/lib/tmdb";
 import type { WatchStatus } from "@prisma/client";
 
@@ -82,10 +83,33 @@ export async function updateWatchlistStatus(itemId: string, status: WatchStatus)
   const profile = await getActiveProfile();
   if (!profile) throw new Error("Aucun profil actif");
 
-  await db.watchlistItem.update({
+  const item = await db.watchlistItem.update({
     where: { id: itemId, profileId: profile.id },
     data: { status, watchedAt: status === "WATCHED" ? new Date() : null },
+    include: { media: true },
   });
+
+  if (item.media.type === "TV" && status === "WATCHED") {
+    const seasons = parseSeasons(item.media.seasonsJson);
+    await db.$transaction(
+      seasons.flatMap((s) =>
+        Array.from({ length: s.episodeCount }, (_, i) => i + 1).map((episode) =>
+          db.episodeWatch.upsert({
+            where: {
+              mediaId_profileId_season_episode: {
+                mediaId: item.mediaId,
+                profileId: profile.id,
+                season: s.season,
+                episode,
+              },
+            },
+            create: { mediaId: item.mediaId, profileId: profile.id, season: s.season, episode },
+            update: {},
+          }),
+        ),
+      ),
+    );
+  }
 
   revalidatePath("/watchlist");
 }
