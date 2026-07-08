@@ -68,7 +68,7 @@ export default async function Home() {
       {continueItems.length > 0 && (
         <section className="mb-8 md:mb-10">
           <h2 className="mb-4 font-heading text-2xl text-mp-text md:text-[26px]">Continuer à regarder</h2>
-          <div className="flex gap-4 overflow-x-auto pb-1">
+          <div className="flex gap-4 no-scrollbar overflow-x-auto pb-1">
             {continueItems.map(({ item, progress }) => (
               <div key={item.id} className="w-44 shrink-0 md:w-48">
                 <MediaCard
@@ -151,7 +151,7 @@ export default async function Home() {
               Voir tout
             </Link>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-1">
+          <div className="flex gap-4 no-scrollbar overflow-x-auto pb-1">
             {watchlistPreview.map(({ item, progress }) => (
               <div key={item.id} className="w-44 shrink-0 md:w-48">
                 <MediaCard

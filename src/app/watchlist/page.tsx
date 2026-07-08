@@ -67,7 +67,7 @@ export default async function WatchlistPage({
     <div className="px-4 pt-5 md:px-10 md:pt-0">
       <h1 className="mb-5 font-heading text-[30px] text-mp-text md:text-[38px]">Ma liste</h1>
 
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+      <div className="no-scrollbar mb-6 flex gap-2 overflow-x-auto pb-1 md:[scrollbar-width:auto] md:[&::-webkit-scrollbar]:block">
         {FILTERS.map((f) => (
           <Link
             key={f.key}
