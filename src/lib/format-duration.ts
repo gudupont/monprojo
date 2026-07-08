@@ -6,6 +6,10 @@ function pluralize(value: number, unit: string): string {
 }
 
 export function formatWatchDuration(minutes: number): string {
+  if (minutes < 60) {
+    return pluralize(minutes, "minute");
+  }
+
   const totalHours = Math.floor(minutes / 60);
 
   const months = Math.floor(totalHours / (HOURS_PER_DAY * DAYS_PER_MONTH));
@@ -13,10 +17,11 @@ export function formatWatchDuration(minutes: number): string {
   const days = Math.floor(remainingAfterMonths / HOURS_PER_DAY);
   const hours = remainingAfterMonths % HOURS_PER_DAY;
 
-  const parts: string[] = [];
-  if (months > 0) parts.push(`${months} mois`);
-  if (days > 0) parts.push(pluralize(days, "jour"));
-  if (hours > 0 || parts.length === 0) parts.push(pluralize(hours, "heure"));
-
-  return parts.join(" ");
+  if (months > 0) {
+    return days > 0 ? `${months} mois ${pluralize(days, "jour")}` : `${months} mois`;
+  }
+  if (days > 0) {
+    return hours > 0 ? `${pluralize(days, "jour")} ${pluralize(hours, "heure")}` : pluralize(days, "jour");
+  }
+  return pluralize(hours, "heure");
 }
