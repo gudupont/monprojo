@@ -6,6 +6,7 @@ import { computeProgressPercent } from "@/lib/media-progress";
 import { hideFromContinueWatching } from "@/lib/actions/watchlist";
 import { MediaCard } from "@/components/media-card";
 import { Button } from "@/components/ui/button";
+import { CalendarItem } from "@/components/calendar-item";
 
 const MONTHS_ABBR = [
   "janv.",
@@ -21,14 +22,6 @@ const MONTHS_ABBR = [
   "nov.",
   "déc.",
 ];
-
-function dateBadgeLabel(date: Date): string {
-  const today = new Date(new Date().setHours(0, 0, 0, 0));
-  const diffDays = Math.round((date.getTime() - today.getTime()) / 86400000);
-  if (diffDays === 0) return "Aujourd'hui";
-  if (diffDays === 1) return "Demain";
-  return `${date.getDate()} ${MONTHS_ABBR[date.getMonth()]}`;
-}
 
 export default async function Home() {
   const profile = await getActiveProfile();
@@ -141,18 +134,7 @@ export default async function Home() {
         ) : (
           <div className="flex flex-col gap-2.5">
             {upcomingEntries.map((entry) => (
-              <Link
-                key={entry.id}
-                href={`/media/${entry.media.type.toLowerCase()}/${entry.media.tmdbId}`}
-                className="flex items-center gap-3.5 rounded-xl border border-mp-border bg-mp-surface p-2.5"
-              >
-                <div className="w-13 shrink-0 text-[11px] font-bold uppercase text-mp-accent">
-                  {dateBadgeLabel(entry.scheduledAt)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-bold text-mp-text">{entry.media.title}</div>
-                </div>
-              </Link>
+              <CalendarItem key={entry.id} date={entry.scheduledAt} media={entry.media} variant="plan" />
             ))}
           </div>
         )}

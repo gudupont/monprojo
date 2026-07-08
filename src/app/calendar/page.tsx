@@ -1,11 +1,10 @@
-import Image from "next/image";
-import Link from "next/link";
 import { db } from "@/lib/db";
 import { deletePlanEntry } from "@/lib/actions/calendar";
 import { getUpcomingReleases } from "@/lib/calendar-releases";
 import { getActiveProfile } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { CalendarSubscription } from "@/components/calendar-subscription";
+import { CalendarItem } from "@/components/calendar-item";
 import type { Media, Profile } from "@prisma/client";
 
 interface PlanRow {
@@ -26,30 +25,6 @@ interface ReleaseRow {
 }
 
 type CalendarRow = PlanRow | ReleaseRow;
-
-const MONTHS_ABBR = [
-  "janv.",
-  "févr.",
-  "mars",
-  "avr.",
-  "mai",
-  "juin",
-  "juil.",
-  "août",
-  "sept.",
-  "oct.",
-  "nov.",
-  "déc.",
-];
-
-function dateBadge(date: Date) {
-  const today = new Date(new Date().setHours(0, 0, 0, 0));
-  const diffDays = Math.round((date.getTime() - today.getTime()) / 86400000);
-  const isToday = diffDays === 0;
-  const day = isToday ? "Aujourd'hui" : diffDays === 1 ? "Demain" : `${date.getDate()} ${MONTHS_ABBR[date.getMonth()]}`;
-  const weekday = date.toLocaleDateString("fr-FR", { weekday: "long" });
-  return { day, weekday, isToday };
-}
 
 export default async function CalendarPage() {
   const profile = await getActiveProfile();
@@ -99,65 +74,32 @@ export default async function CalendarPage() {
       )}
 
       <div className="flex flex-col gap-3 pb-10">
-        {rows.map((row) => {
-          const { day, weekday, isToday } = dateBadge(row.date);
-          const isRelease = row.kind === "release";
-          return (
-            <div
-              key={row.id}
-              className={`flex items-center gap-4 rounded-2xl border p-4 ${
-                isToday
-                  ? "border-mp-accent bg-mp-accent/10"
-                  : isRelease
-                    ? "border-dashed border-mp-border bg-mp-surface"
-                    : "border-mp-border bg-mp-surface"
-              }`}
-            >
-              <div className="w-[72px] shrink-0 text-center md:w-[88px]">
-                <span
-                  className={`block whitespace-nowrap font-heading ${isToday ? "text-[15px] text-mp-accent" : "text-2xl text-mp-text"}`}
-                >
-                  {day}
-                </span>
-                <span className="text-[11px] uppercase text-mp-text-dim">{weekday}</span>
-              </div>
-              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[10px] bg-mp-surface-2">
-                {row.media.poster && (
-                  <Image src={row.media.poster} alt={row.media.title} fill className="object-cover" sizes="48px" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={`/media/${row.media.type.toLowerCase()}/${row.media.tmdbId}`}
-                    className="truncate text-sm font-bold text-mp-text"
-                  >
-                    {row.media.title} · {row.media.type === "TV" ? "Série" : "Film"}
-                    {row.kind === "release" && row.label ? ` · ${row.label}` : ""}
-                  </Link>
-                  <span
-                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase ${
-                      isRelease ? "border-mp-border text-mp-text-dim" : "border-mp-accent text-mp-accent"
-                    }`}
-                  >
-                    {isRelease ? "Sortie" : "Planifié"}
-                  </span>
-                </div>
-                {row.kind === "plan" && (
+        {rows.map((row) => (
+          <CalendarItem
+            key={row.id}
+            date={row.date}
+            media={row.media}
+            variant={row.kind}
+            label={row.kind === "release" ? row.label : undefined}
+            subtitle={
+              row.kind === "plan" ? (
+                <>
                   <div className="mt-0.5 text-xs text-mp-text-dim">planifié par {row.createdByProfile.name}</div>
-                )}
-                {row.kind === "plan" && row.notes && <p className="mt-1 text-xs text-mp-text-dim">{row.notes}</p>}
-              </div>
-              {row.kind === "plan" && (
+                  {row.notes && <p className="mt-1 text-xs text-mp-text-dim">{row.notes}</p>}
+                </>
+              ) : undefined
+            }
+            actions={
+              row.kind === "plan" ? (
                 <form action={deletePlanEntry.bind(null, row.id)}>
                   <Button type="submit" size="sm" variant="ghost">
                     Retirer
                   </Button>
                 </form>
-              )}
-            </div>
-          );
-        })}
+              ) : undefined
+            }
+          />
+        ))}
       </div>
     </div>
   );
