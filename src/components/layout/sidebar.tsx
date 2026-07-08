@@ -19,7 +19,7 @@ export function Sidebar({ watchlistCount, profileName, profileColor }: SidebarPr
     <div className="hidden md:flex h-full w-60 shrink-0 flex-col gap-7 border-r border-mp-border p-4">
       <div className="flex items-center gap-2.5">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] bg-mp-accent">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#181004">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#181004" aria-hidden="true">
             <path d="M6 4l14 8-14 8z" />
           </svg>
         </div>
@@ -35,6 +35,7 @@ export function Sidebar({ watchlistCount, profileName, profileColor }: SidebarPr
             <Link
               key={href}
               href={href}
+              aria-current={active ? "page" : undefined}
               className={`flex w-full items-center gap-3 rounded-[10px] px-3.5 py-2.5 text-sm ${
                 active ? "bg-mp-surface-2 font-bold text-mp-text" : "font-medium text-mp-text-dim"
               }`}

@@ -47,28 +47,33 @@ export function MobileTopBar({ profileName, profileColor }: MobileTopBarProps) {
       <div className="flex h-14 items-center justify-between border-b border-mp-border bg-mp-bg px-4">
         <div className="flex items-center gap-2.5">
           <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[7px] bg-mp-accent">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#181004">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#181004" aria-hidden="true">
               <path d="M6 4l14 8-14 8z" />
             </svg>
           </div>
           <span className="font-heading text-xl italic text-mp-text">MonProjo</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1">
           {searchVisible ? (
             <button
               type="button"
               onClick={() => setSearchOpen((prev) => !prev)}
               aria-label={searchOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
-              className="flex text-mp-text"
+              aria-expanded={searchOpen}
+              className="flex h-11 w-11 shrink-0 items-center justify-center text-mp-text"
             >
               {searchOpen ? <X size={20} strokeWidth={1.8} /> : <Search size={20} strokeWidth={1.8} />}
             </button>
           ) : (
-            <Link href="/search" className="flex text-mp-text">
+            <Link
+              href="/search"
+              aria-label="Recherche"
+              className="flex h-11 w-11 shrink-0 items-center justify-center text-mp-text"
+            >
               <Search size={20} strokeWidth={1.8} />
             </Link>
           )}
-          <ProfileMenu profileName={profileName} profileColor={profileColor} avatarClassName="h-6 w-6" />
+          <ProfileMenu profileName={profileName} profileColor={profileColor} avatarClassName="h-7 w-7" />
         </div>
       </div>
 
