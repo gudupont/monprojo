@@ -49,7 +49,7 @@ export function MediaCard({
           </div>
         </Link>
         {hoverActions && (
-          <div className="absolute top-1.5 right-1.5 flex gap-1 rounded-full bg-black/55 p-2 backdrop-blur-sm transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+          <div className="absolute top-1.5 right-1.5 flex gap-1 rounded-full bg-black/55 p-2 backdrop-blur-sm transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 md:has-[[data-popup-open]]:opacity-100">
             {hoverActions}
           </div>
         )}

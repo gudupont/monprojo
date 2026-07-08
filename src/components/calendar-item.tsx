@@ -58,8 +58,16 @@ export function CalendarItem({ date, media, variant, label, subtitle, actions }:
         </span>
         <span className="text-[11px] uppercase text-mp-text-dim">{weekday}</span>
       </div>
-      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[10px] bg-mp-surface-2">
-        {media.poster && <Image src={media.poster} alt={media.title} fill className="object-cover" sizes="48px" />}
+      <div className="relative aspect-[2/3] h-14 shrink-0 overflow-hidden rounded-[10px] bg-mp-surface-2 sm:h-[72px] md:h-[88px]">
+        {media.poster && (
+          <Image
+            src={media.poster}
+            alt={media.title}
+            fill
+            className="object-cover"
+            sizes="(min-width: 768px) 59px, (min-width: 640px) 48px, 37px"
+          />
+        )}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
