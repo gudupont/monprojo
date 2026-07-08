@@ -22,7 +22,7 @@ export function MarkSeriesWatchedButton({ mediaId, watched }: { mediaId: string;
       <Button
         type="button"
         variant={watched ? "default" : "secondary"}
-        className="gap-2 rounded-full"
+        className="h-11 gap-2 rounded-full"
         onClick={handleClick}
       >
         <Check size={16} />

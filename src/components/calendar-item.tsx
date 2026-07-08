@@ -42,7 +42,7 @@ export function CalendarItem({ date, media, variant, label, subtitle, actions }:
 
   return (
     <div
-      className={`flex items-center gap-4 rounded-2xl border p-4 ${
+      className={`flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border p-4 ${
         isToday
           ? "border-mp-accent bg-mp-accent/10"
           : isRelease
@@ -50,7 +50,7 @@ export function CalendarItem({ date, media, variant, label, subtitle, actions }:
             : "border-mp-border bg-mp-surface"
       }`}
     >
-      <div className="w-[72px] shrink-0 text-center md:w-[88px]">
+      <div className="w-16 shrink-0 text-center sm:w-[72px] md:w-[88px]">
         <span
           className={`block whitespace-nowrap font-heading ${isToday ? "text-[15px] text-mp-accent" : "text-2xl text-mp-text"}`}
         >
@@ -62,10 +62,10 @@ export function CalendarItem({ date, media, variant, label, subtitle, actions }:
         {media.poster && <Image src={media.poster} alt={media.title} fill className="object-cover" sizes="48px" />}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/media/${media.type.toLowerCase()}/${media.tmdbId}`}
-            className="truncate text-sm font-bold text-mp-text"
+            className="line-clamp-2 text-sm font-bold text-mp-text"
           >
             {media.title} · {media.type === "TV" ? "Série" : "Film"}
             {isRelease && label ? ` · ${label}` : ""}
@@ -80,7 +80,7 @@ export function CalendarItem({ date, media, variant, label, subtitle, actions }:
         </div>
         {subtitle}
       </div>
-      {actions}
+      {actions && <div className="ml-auto shrink-0">{actions}</div>}
     </div>
   );
 }

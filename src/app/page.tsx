@@ -97,8 +97,8 @@ export default async function Home() {
         </section>
       )}
 
-      <div className="mb-8 flex flex-wrap items-center gap-5 rounded-[18px] bg-gradient-to-br from-mp-accent to-[#B5482E] p-5 md:mb-10 md:p-7">
-        <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl bg-black/25 text-mp-accent-ink">
+      <div className="mb-8 flex flex-wrap items-center gap-5 rounded-[18px] bg-mp-surface-2 p-5 ring-1 ring-mp-border md:mb-10 md:p-7">
+        <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl bg-mp-accent/15 text-mp-accent">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <rect x="4" y="4" width="16" height="16" rx="3" />
             <circle cx="9" cy="9" r="1.2" fill="currentColor" stroke="none" />
@@ -109,14 +109,14 @@ export default async function Home() {
           </svg>
         </div>
         <div className="min-w-[180px] flex-1">
-          <div className="font-heading text-xl text-mp-accent-ink md:text-[22px]">Indécis ce soir ?</div>
-          <div className="mt-1 text-[13px] text-mp-accent-ink/75">
+          <div className="font-heading text-xl text-mp-text md:text-[22px]">Indécis ce soir ?</div>
+          <div className="mt-1 text-[13px] text-mp-text-dim">
             Laisse MonProjo choisir pour toi parmi ta liste et tes goûts.
           </div>
         </div>
         <Link
           href="/decide"
-          className="shrink-0 rounded-full bg-mp-accent-ink px-5.5 py-3 text-sm font-bold text-mp-accent"
+          className="shrink-0 rounded-full bg-mp-accent px-5.5 py-3 text-sm font-bold text-mp-accent-ink"
         >
           Décide pour moi
         </Link>

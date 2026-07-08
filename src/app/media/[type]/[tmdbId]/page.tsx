@@ -120,7 +120,7 @@ export default async function MediaDetailPage({
       <div className="mt-4 flex flex-wrap gap-7 rounded-[20px] border border-mp-border bg-mp-surface p-6 md:flex-nowrap md:p-10">
         <div className="relative aspect-[2/3] w-24 shrink-0 overflow-hidden rounded-xl bg-mp-surface-2 md:w-[150px]">
           {media.poster ? (
-            <Image src={media.poster} alt={media.title} fill className="object-cover" sizes="150px" />
+            <Image src={media.poster} alt={media.title} fill priority className="object-cover" sizes="150px" />
           ) : null}
         </div>
 
@@ -153,7 +153,7 @@ export default async function MediaDetailPage({
               <Button
                 type="submit"
                 variant={watchlistItem ? "default" : "outline"}
-                className="gap-2 rounded-full"
+                className="h-11 gap-2 rounded-full"
               >
                 <Bookmark size={16} />
                 {watchlistItem ? "Dans ma liste" : "Ajouter à ma liste"}
@@ -164,7 +164,7 @@ export default async function MediaDetailPage({
                 <Button
                   type="submit"
                   variant={watchlistItem?.status === "WATCHED" ? "default" : "secondary"}
-                  className="gap-2 rounded-full"
+                  className="h-11 gap-2 rounded-full"
                 >
                   <Check size={16} />
                   {watchlistItem?.status === "WATCHED" ? "Vu" : "Marquer comme vu"}
@@ -203,6 +203,7 @@ export default async function MediaDetailPage({
 
       {type === "tv" && seasons.length > 0 && activeSeason && (
         <div className="mt-8">
+          <h2 className="mb-3 font-heading text-2xl text-mp-text">Épisodes</h2>
           {globalPercent !== null && (
             <div className="mb-4 flex items-center gap-3">
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-mp-surface-2">

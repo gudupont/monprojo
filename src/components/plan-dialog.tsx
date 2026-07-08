@@ -25,7 +25,7 @@ export function PlanDialog({ mediaId, tmdbId, type, title }: PlanDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" className="gap-2 rounded-full" />}>
+      <DialogTrigger render={<Button variant="outline" className="h-11 gap-2 rounded-full" />}>
         <CalendarClock size={16} />
         Planifier
       </DialogTrigger>

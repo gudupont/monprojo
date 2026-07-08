@@ -40,7 +40,7 @@ export function CastList({ cast, mediaId }: { cast: TmdbCastMember[]; mediaId: s
             key={actor.tmdbId}
             type="button"
             onClick={() => handleSelect(actor)}
-            className="flex items-center gap-2 rounded-full border border-mp-border bg-mp-surface py-1 pr-3.5 pl-1 text-left hover:bg-mp-surface-2"
+            className="flex items-center gap-2 rounded-full border border-mp-border bg-mp-surface py-1.5 pr-3.5 pl-1 text-left hover:bg-mp-surface-2"
           >
             <span className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full bg-mp-surface-2">
               {actor.profilePath ? (

@@ -1,10 +1,9 @@
 import { db } from "@/lib/db";
-import { deletePlanEntry } from "@/lib/actions/calendar";
 import { getUpcomingReleases } from "@/lib/calendar-releases";
 import { getActiveProfile } from "@/lib/session";
-import { Button } from "@/components/ui/button";
 import { CalendarSubscription } from "@/components/calendar-subscription";
 import { CalendarItem } from "@/components/calendar-item";
+import { RemovePlanButton } from "@/components/remove-plan-button";
 import type { Media, Profile } from "@prisma/client";
 
 interface PlanRow {
@@ -82,21 +81,12 @@ export default async function CalendarPage() {
             variant={row.kind}
             label={row.kind === "release" ? row.label : undefined}
             subtitle={
-              row.kind === "plan" ? (
-                <>
-                  <div className="mt-0.5 text-xs text-mp-text-dim">planifié par {row.createdByProfile.name}</div>
-                  {row.notes && <p className="mt-1 text-xs text-mp-text-dim">{row.notes}</p>}
-                </>
+              row.kind === "plan" && row.notes ? (
+                <p className="mt-1 text-xs text-mp-text-dim">{row.notes}</p>
               ) : undefined
             }
             actions={
-              row.kind === "plan" ? (
-                <form action={deletePlanEntry.bind(null, row.id)}>
-                  <Button type="submit" size="sm" variant="ghost">
-                    Retirer
-                  </Button>
-                </form>
-              ) : undefined
+              row.kind === "plan" ? <RemovePlanButton entryId={row.id} /> : undefined
             }
           />
         ))}

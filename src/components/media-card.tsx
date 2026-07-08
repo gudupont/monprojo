@@ -39,17 +39,17 @@ export function MediaCard({
             {poster ? (
               <Image src={poster} alt={title} fill className="object-cover" sizes="200px" />
             ) : (
-              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">Pas d&apos;affiche</div>
+              <div className="flex h-full items-center justify-center text-xs text-mp-text-dim">Pas d&apos;affiche</div>
             )}
             {typeof progressPercent === "number" && progressPercent > 0 && (
               <div className="absolute inset-x-0 bottom-0 h-1 bg-black/45">
-                <div className="h-full bg-mp-text" style={{ width: `${progressPercent}%` }} />
+                <div className="h-full bg-mp-accent" style={{ width: `${progressPercent}%` }} />
               </div>
             )}
           </div>
         </Link>
         {hoverActions && (
-          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+          <div className="absolute top-1.5 right-1.5 flex gap-1 rounded-full bg-black/55 p-2 backdrop-blur-sm transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
             {hoverActions}
           </div>
         )}
@@ -58,7 +58,7 @@ export function MediaCard({
         <Link href={`/media/${normalizedType}/${tmdbId}`} className="line-clamp-1 text-sm font-medium">
           {title}
         </Link>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-mp-text-dim">
           {year && <span>{year}</span>}
           <Badge variant="secondary">{normalizedType === "movie" ? "Film" : "Série"}</Badge>
           {tmdbRating ? <span>TMDb {tmdbRating.toFixed(1)}</span> : null}
