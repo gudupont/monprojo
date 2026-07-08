@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { getUpcomingReleases } from "@/lib/calendar-releases";
 import { getActiveProfile } from "@/lib/session";
 import { CalendarSubscription } from "@/components/calendar-subscription";
-import { CalendarItem } from "@/components/calendar-item";
+import { CalendarDayHeader, CalendarItem } from "@/components/calendar-item";
 import { RemovePlanButton } from "@/components/remove-plan-button";
 import type { Media, Profile } from "@prisma/client";
 
@@ -59,6 +59,19 @@ export default async function CalendarPage() {
     ),
   ].sort((a, b) => a.date.getTime() - b.date.getTime());
 
+  const dayGroups: { dayKey: number; date: Date; rows: CalendarRow[] }[] = [];
+  for (const row of rows) {
+    const dayDate = new Date(row.date);
+    dayDate.setHours(0, 0, 0, 0);
+    const dayKey = dayDate.getTime();
+    const lastGroup = dayGroups[dayGroups.length - 1];
+    if (lastGroup && lastGroup.dayKey === dayKey) {
+      lastGroup.rows.push(row);
+    } else {
+      dayGroups.push({ dayKey, date: dayDate, rows: [row] });
+    }
+  }
+
   return (
     <div className="px-4 pt-5 md:px-10 md:pt-0">
       <h1 className="mb-1.5 font-heading text-[30px] text-mp-text md:text-[38px]">Calendrier</h1>
@@ -72,23 +85,29 @@ export default async function CalendarPage() {
         </p>
       )}
 
-      <div className="flex flex-col gap-3 pb-10">
-        {rows.map((row) => (
-          <CalendarItem
-            key={row.id}
-            date={row.date}
-            media={row.media}
-            variant={row.kind}
-            label={row.kind === "release" ? row.label : undefined}
-            subtitle={
-              row.kind === "plan" && row.notes ? (
-                <p className="mt-1 text-xs text-mp-text-dim">{row.notes}</p>
-              ) : undefined
-            }
-            actions={
-              row.kind === "plan" ? <RemovePlanButton entryId={row.id} /> : undefined
-            }
-          />
+      <div className="flex flex-col gap-5 pb-10">
+        {dayGroups.map((group) => (
+          <div key={group.dayKey} className="flex flex-col gap-3">
+            <CalendarDayHeader date={group.date} />
+            {group.rows.map((row) => (
+              <CalendarItem
+                key={row.id}
+                date={row.date}
+                media={row.media}
+                variant={row.kind}
+                label={row.kind === "release" ? row.label : undefined}
+                showDate={false}
+                subtitle={
+                  row.kind === "plan" && row.notes ? (
+                    <p className="mt-1 text-xs text-mp-text-dim">{row.notes}</p>
+                  ) : undefined
+                }
+                actions={
+                  row.kind === "plan" ? <RemovePlanButton entryId={row.id} /> : undefined
+                }
+              />
+            ))}
+          </div>
         ))}
       </div>
     </div>

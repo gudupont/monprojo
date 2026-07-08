@@ -27,7 +27,7 @@ export function WatchlistCardActions({ id, status }: { id: string; status: Watch
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="Actions"
-        className="flex size-7 cursor-pointer items-center justify-center rounded-full text-white outline-none hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-mp-accent"
+        className="flex size-11 cursor-pointer items-center justify-center rounded-full bg-black/55 text-white outline-none backdrop-blur-sm hover:bg-black/70 focus-visible:ring-2 focus-visible:ring-mp-accent"
       >
         <MoreVertical size={16} strokeWidth={1.8} />
       </DropdownMenuTrigger>

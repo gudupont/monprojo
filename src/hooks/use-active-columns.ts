@@ -4,13 +4,11 @@ import { useEffect, useState } from "react";
 
 const BASE_COLUMNS = 2;
 
-// Aligned with the watchlist grid's grid-cols-* classes (see src/app/watchlist/page.tsx).
+// Aligned with WatchlistGrid's grid-cols-* classes (see src/components/watchlist-grid.tsx).
 const BREAKPOINTS = [
-  { query: "(min-width: 1536px)", columns: 8 },
-  { query: "(min-width: 1280px)", columns: 6 },
-  { query: "(min-width: 1024px)", columns: 5 },
-  { query: "(min-width: 768px)", columns: 3 },
-  { query: "(min-width: 640px)", columns: 5 },
+  { query: "(min-width: 1536px)", columns: 6 },
+  { query: "(min-width: 1280px)", columns: 5 },
+  { query: "(min-width: 1024px)", columns: 3 },
 ];
 
 function resolveColumns(): number {

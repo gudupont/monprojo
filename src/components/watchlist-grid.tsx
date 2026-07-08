@@ -62,7 +62,7 @@ export function WatchlistGrid({
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-5 pb-6 sm:grid-cols-5 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
+      <div className="grid grid-cols-2 gap-5 pb-6 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
         {paginated.map((data) => (
           <MediaCard
             key={data.id}

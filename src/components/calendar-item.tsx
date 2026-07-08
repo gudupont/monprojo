@@ -34,9 +34,22 @@ interface CalendarItemProps {
   label?: string | null;
   subtitle?: ReactNode;
   actions?: ReactNode;
+  showDate?: boolean;
 }
 
-export function CalendarItem({ date, media, variant, label, subtitle, actions }: CalendarItemProps) {
+export function CalendarDayHeader({ date }: { date: Date }) {
+  const { day, weekday, isToday } = dateBadge(date);
+  return (
+    <div className="flex items-baseline gap-2 px-1">
+      <span className={`font-heading ${isToday ? "text-[15px] text-mp-accent" : "text-2xl text-mp-text"}`}>
+        {day}
+      </span>
+      <span className="text-[11px] uppercase text-mp-text-dim">{weekday}</span>
+    </div>
+  );
+}
+
+export function CalendarItem({ date, media, variant, label, subtitle, actions, showDate = true }: CalendarItemProps) {
   const { day, weekday, isToday } = dateBadge(date);
   const isRelease = variant === "release";
 
@@ -50,14 +63,16 @@ export function CalendarItem({ date, media, variant, label, subtitle, actions }:
             : "border-mp-border bg-mp-surface"
       }`}
     >
-      <div className="w-16 shrink-0 text-center sm:w-[72px] md:w-[88px]">
-        <span
-          className={`block whitespace-nowrap font-heading ${isToday ? "text-[15px] text-mp-accent" : "text-2xl text-mp-text"}`}
-        >
-          {day}
-        </span>
-        <span className="text-[11px] uppercase text-mp-text-dim">{weekday}</span>
-      </div>
+      {showDate && (
+        <div className="w-16 shrink-0 text-center sm:w-[72px] md:w-[88px]">
+          <span
+            className={`block whitespace-nowrap font-heading ${isToday ? "text-[15px] text-mp-accent" : "text-2xl text-mp-text"}`}
+          >
+            {day}
+          </span>
+          <span className="text-[11px] uppercase text-mp-text-dim">{weekday}</span>
+        </div>
+      )}
       <div className="relative aspect-[2/3] h-14 shrink-0 overflow-hidden rounded-[10px] bg-mp-surface-2 sm:h-[72px] md:h-[88px]">
         {media.poster && (
           <Image

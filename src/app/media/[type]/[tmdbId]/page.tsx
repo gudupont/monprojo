@@ -117,10 +117,17 @@ export default async function MediaDetailPage({
     <div className="px-4 pt-4 pb-10 md:px-10 md:pt-6">
       <BackLink />
 
-      <div className="mt-4 flex flex-wrap gap-7 rounded-[20px] border border-mp-border bg-mp-surface p-6 md:flex-nowrap md:p-10">
+      <div className="mt-4 flex flex-wrap items-start gap-7 rounded-[20px] border border-mp-border bg-mp-surface p-6 md:flex-nowrap md:p-10">
         <div className="relative aspect-[2/3] w-24 shrink-0 overflow-hidden rounded-xl bg-mp-surface-2 md:w-[150px]">
           {media.poster ? (
-            <Image src={media.poster} alt={media.title} fill priority className="object-cover" sizes="150px" />
+            <Image
+              src={media.poster}
+              alt={media.title}
+              fill
+              priority
+              className="object-cover"
+              sizes="(min-width: 768px) 150px, 96px"
+            />
           ) : null}
         </div>
 

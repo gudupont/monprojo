@@ -5,7 +5,6 @@ import { db } from "@/lib/db";
 import { computeProgressPercent } from "@/lib/media-progress";
 import { hideFromContinueWatching } from "@/lib/actions/watchlist";
 import { MediaCard } from "@/components/media-card";
-import { Button } from "@/components/ui/button";
 import { CalendarItem } from "@/components/calendar-item";
 
 const MONTHS_ABBR = [
@@ -71,7 +70,7 @@ export default async function Home() {
           <h2 className="mb-4 font-heading text-2xl text-mp-text md:text-[26px]">Continuer à regarder</h2>
           <div className="flex gap-4 overflow-x-auto pb-1">
             {continueItems.map(({ item, progress }) => (
-              <div key={item.id} className="w-32 shrink-0 md:w-40">
+              <div key={item.id} className="w-44 shrink-0 md:w-48">
                 <MediaCard
                   tmdbId={item.media.tmdbId}
                   type={item.media.type}
@@ -82,12 +81,16 @@ export default async function Home() {
                   progressPercent={progress}
                   hoverActions={
                     <form action={hideFromContinueWatching.bind(null, item.id)}>
-                      <Button type="submit" size="icon-sm" variant="ghost" aria-label="Retirer de « Continuer à regarder »">
+                      <button
+                        type="submit"
+                        aria-label="Retirer de « Continuer à regarder »"
+                        className="flex size-11 cursor-pointer items-center justify-center rounded-full bg-black/55 text-white outline-none backdrop-blur-sm hover:bg-black/70 focus-visible:ring-2 focus-visible:ring-mp-accent"
+                      >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <line x1="18" y1="6" x2="6" y2="18" />
                           <line x1="6" y1="6" x2="18" y2="18" />
                         </svg>
-                      </Button>
+                      </button>
                     </form>
                   }
                 />
@@ -150,7 +153,7 @@ export default async function Home() {
           </div>
           <div className="flex gap-4 overflow-x-auto pb-1">
             {watchlistPreview.map(({ item, progress }) => (
-              <div key={item.id} className="w-32 shrink-0 md:w-40">
+              <div key={item.id} className="w-44 shrink-0 md:w-48">
                 <MediaCard
                   tmdbId={item.media.tmdbId}
                   type={item.media.type}

@@ -29,7 +29,7 @@ export async function computeProgressPercent(
   // Ignore les EpisodeWatch orphelins (saison/épisode disparu depuis un refresh TMDb) pour éviter un % > 100.
   const watched = watches.filter((w) => validEpisodesBySeason.get(w.season)?.has(w.episode) ?? false).length;
 
-  return Math.min(100, Math.round((watched / total) * 100));
+  return watched === total ? 100 : Math.min(99, Math.floor((watched / total) * 100));
 }
 
 export async function computeProgressPercentBatch(
@@ -71,7 +71,7 @@ export async function computeProgressPercentBatch(
       (w) => validEpisodesBySeason.get(w.season)?.has(w.episode) ?? false,
     ).length;
 
-    result.set(media.id, Math.min(100, Math.round((watched / total) * 100)));
+    result.set(media.id, watched === total ? 100 : Math.min(99, Math.floor((watched / total) * 100)));
   }
 
   return result;
