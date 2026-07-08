@@ -1,13 +1,13 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Bookmark, Check } from "lucide-react";
-import { getMediaDetail, getSeasonEpisodes, type TmdbEpisodeSummary } from "@/lib/tmdb";
+import { getMediaDetail } from "@/lib/tmdb";
 import { getOrRefreshMedia } from "@/lib/actions/media";
 import { toggleWatchlist, toggleMovieWatched } from "@/lib/actions/watchlist";
 import { toggleEpisodeWatched } from "@/lib/actions/episode";
 import { getActiveProfile } from "@/lib/session";
 import { db } from "@/lib/db";
-import { parseSeasons, parseGenres, findDefaultSeason } from "@/lib/progress";
+import { parseSeasons, parseGenres, findDefaultSeason, seasonEpisodeNumbers } from "@/lib/progress";
 import { computeProgressPercent } from "@/lib/media-progress";
 import { getProfileProviders } from "@/lib/actions/provider";
 import { getRadarrStatus, checkInRadarr } from "@/lib/actions/radarr";
@@ -22,6 +22,7 @@ import { RadarrButton } from "@/components/radarr-button";
 import { SonarrButton } from "@/components/sonarr-button";
 import { SeasonSelect } from "@/components/season-select";
 import { SeasonWatchButton } from "@/components/season-watch-confirm-modal";
+import { MarkSeriesWatchedButton } from "@/components/mark-series-watched-button";
 
 export default async function MediaDetailPage({
   params,
@@ -75,16 +76,9 @@ export default async function MediaDetailPage({
     findDefaultSeason(seasons, watchedCounts) ??
     seasons[0];
 
-  let episodeTitles: TmdbEpisodeSummary[] = [];
-  if (type === "tv" && activeSeason) {
-    try {
-      episodeTitles = await getSeasonEpisodes(tmdbIdNumber, activeSeason.season);
-    } catch {
-      episodeTitles = [];
-    }
-  }
-  const titleByEpisode = new Map(episodeTitles.map((e) => [e.episode, e.title]));
-  const airDateByEpisode = new Map(episodeTitles.map((e) => [e.episode, e.airDate]));
+  const activeSeasonEpisodeNumbers = activeSeason ? seasonEpisodeNumbers(activeSeason) : [];
+  const titleByEpisode = new Map((activeSeason?.episodes ?? []).map((e) => [e.episode, e.title]));
+  const airDateByEpisode = new Map((activeSeason?.episodes ?? []).map((e) => [e.episode, e.airDate]));
 
   function formatAirDate(airDate: string | null | undefined): string {
     if (!airDate) return "N/A";
@@ -95,18 +89,16 @@ export default async function MediaDetailPage({
   const seasonWatchedCount = activeSeason
     ? episodeWatches.filter((e) => e.season === activeSeason.season).length
     : 0;
-  const seasonPercent = activeSeason && activeSeason.episodeCount > 0
-    ? Math.round((seasonWatchedCount / activeSeason.episodeCount) * 100)
+  const seasonTotalEpisodes = activeSeasonEpisodeNumbers.length;
+  const seasonPercent = seasonTotalEpisodes > 0
+    ? Math.min(100, Math.round((seasonWatchedCount / seasonTotalEpisodes) * 100))
     : 0;
-  const seasonFullyWatched = activeSeason ? seasonWatchedCount >= activeSeason.episodeCount : false;
+  const seasonFullyWatched = seasonTotalEpisodes > 0 ? seasonWatchedCount >= seasonTotalEpisodes : false;
 
   const previousSeasons = activeSeason ? seasons.filter((s) => s.season < activeSeason.season) : [];
   const previousSeasonsToWatch = previousSeasons
-    .filter((s) => episodeWatches.filter((e) => e.season === s.season).length < s.episodeCount)
-    .map((s) => ({ season: s.season, episodeNumbers: Array.from({ length: s.episodeCount }, (_, i) => i + 1) }));
-  const previousSeasonsToUnwatch = previousSeasons
-    .filter((s) => episodeWatches.some((e) => e.season === s.season))
-    .map((s) => ({ season: s.season }));
+    .filter((s) => episodeWatches.filter((e) => e.season === s.season).length < seasonEpisodeNumbers(s).length)
+    .map((s) => ({ season: s.season, episodeNumbers: seasonEpisodeNumbers(s) }));
 
   const globalPercent =
     type === "tv" && profile
@@ -179,6 +171,9 @@ export default async function MediaDetailPage({
                 </Button>
               </form>
             )}
+            {type === "tv" && profile && (
+              <MarkSeriesWatchedButton mediaId={media.id} watched={watchlistItem?.status === "WATCHED"} />
+            )}
             <PlanDialog mediaId={media.id} title={media.title} />
             {hasRadarrConfig && profile && (
               <RadarrButton
@@ -233,22 +228,22 @@ export default async function MediaDetailPage({
                 mediaId={media.id}
                 season={activeSeason.season}
                 direction="unwatch"
-                episodeNumbers={Array.from({ length: activeSeason.episodeCount }, (_, i) => i + 1)}
-                previousSeasons={previousSeasonsToUnwatch}
+                episodeNumbers={activeSeasonEpisodeNumbers}
+                previousSeasons={[]}
               />
             ) : (
               <SeasonWatchButton
                 mediaId={media.id}
                 season={activeSeason.season}
                 direction="watch"
-                episodeNumbers={Array.from({ length: activeSeason.episodeCount }, (_, i) => i + 1)}
+                episodeNumbers={activeSeasonEpisodeNumbers}
                 previousSeasons={previousSeasonsToWatch}
               />
             )}
           </div>
 
           <div className="flex flex-col gap-2.5">
-            {Array.from({ length: activeSeason.episodeCount }, (_, i) => i + 1).map((ep) => {
+            {activeSeasonEpisodeNumbers.map((ep) => {
               const watched = watchedSet.has(`${activeSeason.season}-${ep}`);
               const title = titleByEpisode.get(ep);
               return (

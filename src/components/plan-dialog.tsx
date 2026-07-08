@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CalendarClock } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,8 @@ export function PlanDialog({ mediaId, tmdbId, type, title }: PlanDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" />}>
+      <DialogTrigger render={<Button variant="outline" className="gap-2 rounded-full" />}>
+        <CalendarClock size={16} />
         Planifier
       </DialogTrigger>
       <DialogContent>

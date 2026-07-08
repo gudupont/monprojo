@@ -7,7 +7,11 @@ import { parseSeasons } from "@/lib/progress";
 
 const CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24h
 
-export async function getOrRefreshMedia(tmdbId: number, type: TmdbMediaType) {
+export async function getOrRefreshMedia(
+  tmdbId: number,
+  type: TmdbMediaType,
+  options?: { force?: boolean },
+) {
   const existing = await db.media.findUnique({ where: { tmdbId } });
   const hasIncompleteSeasons =
     existing?.type === "TV" &&
@@ -23,7 +27,7 @@ export async function getOrRefreshMedia(tmdbId: number, type: TmdbMediaType) {
     !hasIncompleteSeasons &&
     !hasMissingRuntime &&
     Date.now() - existing.cachedAt.getTime() < CACHE_TTL_MS;
-  if (isFresh) {
+  if (isFresh && !options?.force) {
     return existing;
   }
 

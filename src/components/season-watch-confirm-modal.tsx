@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Check, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmActionModal } from "@/components/confirm-action-modal";
 import { markSeasonWatched, unmarkSeasonWatched } from "@/lib/actions/episode";
 
 type PreviousSeason = { season: number; episodeNumbers?: number[] };
@@ -31,21 +33,28 @@ export function SeasonWatchButton({
 }) {
   const [open, setOpen] = useState(false);
 
+  if (direction === "unwatch") {
+    return (
+      <Button
+        type="button"
+        size="default"
+        variant="secondary"
+        className="gap-2 rounded-full"
+        onClick={() => unmarkSeasonWatched(mediaId, season)}
+      >
+        <RotateCcw size={16} />
+        Marquer la saison comme non vue
+      </Button>
+    );
+  }
+
   async function apply() {
-    if (direction === "watch") {
-      await markSeasonWatched(
-        mediaId,
-        season,
-        episodeNumbers,
-        previousSeasons.map((s) => ({ season: s.season, episodeNumbers: s.episodeNumbers ?? [] })),
-      );
-    } else {
-      await unmarkSeasonWatched(
-        mediaId,
-        season,
-        previousSeasons.map((s) => ({ season: s.season })),
-      );
-    }
+    await markSeasonWatched(
+      mediaId,
+      season,
+      episodeNumbers,
+      previousSeasons.map((s) => ({ season: s.season, episodeNumbers: s.episodeNumbers ?? [] })),
+    );
     setOpen(false);
   }
 
@@ -59,37 +68,26 @@ export function SeasonWatchButton({
 
   return (
     <>
-      <Button type="button" size="sm" variant="secondary" onClick={handleClick}>
-        {direction === "watch" ? "Marquer la saison comme vue" : "Marquer la saison comme non vue"}
+      <Button
+        type="button"
+        size="default"
+        variant="secondary"
+        className="gap-2 rounded-full"
+        onClick={handleClick}
+      >
+        <Check size={16} />
+        Marquer la saison comme vue
       </Button>
 
       {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-          onClick={() => setOpen(false)}
-        >
-          <div
-            className="w-full max-w-sm rounded-xl border border-mp-border bg-mp-surface p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="mb-2 font-heading text-xl text-mp-text">
-              {direction === "watch" ? "Marquer les saisons comme vues" : "Marquer les saisons comme non vues"}
-            </h2>
-            <p className="mb-5 text-sm leading-relaxed text-mp-text-dim">
-              {summarizeSeasons(previousSeasons)}{" "}
-              {previousSeasons.length > 1 ? "seront également" : "sera également"}{" "}
-              {direction === "watch" ? "marquée(s) comme vue(s)" : "marquée(s) comme non vue(s)"} en plus de la saison {season}.
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button type="button" size="sm" variant="secondary" onClick={() => setOpen(false)}>
-                Annuler
-              </Button>
-              <Button type="button" size="sm" onClick={apply}>
-                Valider
-              </Button>
-            </div>
-          </div>
-        </div>
+        <ConfirmActionModal
+          title="Marquer les saisons comme vues"
+          message={`${summarizeSeasons(previousSeasons)} ${
+            previousSeasons.length > 1 ? "seront également" : "sera également"
+          } marquée(s) comme vue(s) en plus de la saison ${season}.`}
+          onConfirm={apply}
+          onCancel={() => setOpen(false)}
+        />
       )}
     </>
   );

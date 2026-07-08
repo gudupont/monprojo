@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import { getActiveProfile } from "@/lib/session";
@@ -24,6 +24,18 @@ const bricolageGrotesque = Bricolage_Grotesque({
 export const metadata: Metadata = {
   title: "Monprojo",
   description: "Films et séries à voir en famille, planifiés dans un calendrier partagé",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/icons/icon-192.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0A0B0D",
 };
 
 export default async function RootLayout({

@@ -120,16 +120,15 @@ export async function getMediaDetail(tmdbId: number, type: TmdbMediaType): Promi
       .filter((s) => s.season_number > 0)
       .map((s) => ({ season: s.season_number, episodeCount: s.episode_count }));
 
-    seasons = await Promise.all(
-      seasonSummaries.map(async (s) => {
-        try {
-          const episodes = await getSeasonEpisodes(tmdbId, s.season);
-          return { ...s, episodes };
-        } catch {
-          return s;
-        }
-      })
-    );
+    seasons = [];
+    for (const s of seasonSummaries) {
+      try {
+        const episodes = await getSeasonEpisodes(tmdbId, s.season);
+        seasons.push({ ...s, episodes });
+      } catch {
+        seasons.push(s);
+      }
+    }
   }
 
   return {

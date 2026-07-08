@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { parseSeasons, totalEpisodes } from "@/lib/progress";
+import { parseSeasons, totalEpisodes, seasonEpisodeNumbers } from "@/lib/progress";
 import type { Media, WatchStatus } from "@prisma/client";
 
 function statusFallbackPercent(status: WatchStatus): number {
@@ -17,9 +17,17 @@ export async function computeProgressPercent(
     return statusFallbackPercent(status);
   }
 
-  const total = totalEpisodes(parseSeasons(media.seasonsJson));
+  const seasons = parseSeasons(media.seasonsJson);
+  const total = totalEpisodes(seasons);
   if (!total) return statusFallbackPercent(status);
 
-  const watched = await db.episodeWatch.count({ where: { mediaId: media.id, profileId } });
-  return Math.round((watched / total) * 100);
+  const validEpisodesBySeason = new Map(seasons.map((s) => [s.season, new Set(seasonEpisodeNumbers(s))]));
+  const watches = await db.episodeWatch.findMany({
+    where: { mediaId: media.id, profileId },
+    select: { season: true, episode: true },
+  });
+  // Ignore les EpisodeWatch orphelins (saison/épisode disparu depuis un refresh TMDb) pour éviter un % > 100.
+  const watched = watches.filter((w) => validEpisodesBySeason.get(w.season)?.has(w.episode) ?? false).length;
+
+  return Math.min(100, Math.round((watched / total) * 100));
 }
