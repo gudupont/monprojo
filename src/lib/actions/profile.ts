@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { getActiveProfile, setActiveProfileCookie, clearActiveProfileCookie } from "@/lib/session";
 
@@ -21,6 +22,18 @@ export async function createProfile(formData: FormData) {
 
   await setActiveProfileCookie(profile.id);
   redirect("/search");
+}
+
+export async function renameProfile(profileId: string, name: string): Promise<{ success: boolean }> {
+  const trimmed = name.trim();
+  if (trimmed.length === 0) {
+    return { success: false };
+  }
+
+  await db.profile.update({ where: { id: profileId }, data: { name: trimmed } });
+  revalidatePath("/profiles");
+  revalidatePath("/", "layout");
+  return { success: true };
 }
 
 export async function selectProfile(formData: FormData) {

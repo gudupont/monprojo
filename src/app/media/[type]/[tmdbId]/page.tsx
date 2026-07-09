@@ -200,7 +200,11 @@ export default async function MediaDetailPage({
         </div>
       </div>
 
-      <WatchProviders link={watchProviders.link} providers={sortedProviders} />
+      <WatchProviders
+        link={watchProviders.link}
+        providers={sortedProviders}
+        ownedProviderIds={ownedProviderIds}
+      />
 
       {type === "tv" && seasons.length === 0 && (
         <div className="mt-8 rounded-xl border border-mp-border bg-mp-surface p-6 text-sm text-mp-text-dim">

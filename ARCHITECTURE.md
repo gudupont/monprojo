@@ -35,7 +35,8 @@ Profile 1───* WatchlistItem *───1 Media
 Profile 1───* PlanEntry     *───1 Media
 ```
 
-- **Profile** : `name`, `avatarColor` — un profil = un utilisateur du foyer, isole watchlist/planning.
+- **Profile** : `name` (renommable via `renameProfile`), `avatarColor` — un profil = un utilisateur du foyer, isole watchlist/planning.
+- **ProfileProvider** : lien `(profileId, providerId)` — plateformes de streaming TMDb possédées par un profil, gérées sur `/profiles` (`lib/actions/provider.ts`). Utilisé pour prioriser et mettre en avant visuellement les diffuseurs possédés sur la fiche détail (`WatchProviders`).
 - **Media** : cache local des métadonnées TMDb/OMDb (`tmdbId` unique, `imdbId`, `type: MOVIE|TV`, titre, poster, overview, notes). Rafraîchi si `cachedAt` a plus de 24h (`CACHE_TTL_MS` dans `lib/actions/media.ts`).
 - **WatchlistItem** : lien `(mediaId, profileId)` unique, `status: TO_WATCH|WATCHING|WATCHED`.
 - **PlanEntry** : entrée de calendrier (date planifiée, notes, créée par un profil) — pas de lien direct à un profil "propriétaire unique", visible par tous (calendrier partagé, cf. description app dans layout.tsx).
@@ -61,7 +62,7 @@ Pas d'authentification — le "profil actif" est stocké dans un cookie httpOnly
 | `/watchlist` | `src/app/watchlist/page.tsx` | Liste + filtrage par statut |
 | `/calendar` | `src/app/calendar/page.tsx` | Planning (PlanEntry) |
 | `/media/[type]/[tmdbId]` | `src/app/media/[type]/[tmdbId]/page.tsx` | Fiche détail, ajout watchlist/planning |
-| `/profiles` | `src/app/profiles/page.tsx` | Création/sélection de profil |
+| `/profiles` | `src/app/profiles/page.tsx` | Création/sélection/renommage de profil, réglages (plateformes possédées, Radarr, Sonarr) sur un seul écran, sans repli |
 | `/decide` | — | **Référencé dans `nav-items.tsx` mais route absente** — US-6.x du PRD non implémentées |
 
 ## 7. UI / Design system

@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { ProviderSelector } from "@/components/provider-selector";
 import { RadarrSettings } from "@/components/radarr-settings";
 import { SonarrSettings } from "@/components/sonarr-settings";
-import { CollapsibleSection } from "@/components/collapsible-section";
 import { DeleteProfileModal } from "@/components/delete-profile-modal";
+import { RenameProfileButton } from "@/components/rename-profile-button";
 
 export default async function ProfilesPage() {
   const profiles = await db.profile.findMany({ orderBy: { createdAt: "asc" } });
@@ -27,18 +27,22 @@ export default async function ProfilesPage() {
       {profiles.length > 0 && (
         <div className="flex flex-wrap justify-center gap-4">
           {profiles.map((profile) => (
-            <div key={profile.id} className="relative">
+            <div key={profile.id} className="relative flex flex-col items-center gap-2">
               <form action={selectProfile}>
                 <input type="hidden" name="profileId" value={profile.id} />
-                <button type="submit" className="flex cursor-pointer flex-col items-center gap-2">
+                <button
+                  type="submit"
+                  aria-label={profile.name}
+                  className="flex cursor-pointer flex-col items-center gap-2"
+                >
                   <Avatar className="h-16 w-16" style={{ backgroundColor: profile.avatarColor }}>
                     <AvatarFallback style={{ backgroundColor: profile.avatarColor }} className="text-white text-xl">
                       {profile.name.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm">{profile.name}</span>
                 </button>
               </form>
+              <RenameProfileButton profileId={profile.id} initialName={profile.name} />
               <div className="absolute -top-1 -right-1">
                 <DeleteProfileModal profileId={profile.id} profileName={profile.name} />
               </div>
@@ -53,13 +57,14 @@ export default async function ProfilesPage() {
       </form>
 
       {activeProfile && (
-        <CollapsibleSection title="Mes plateformes">
+        <div>
+          <h2 className="mb-3 text-lg font-semibold">Mes plateformes</h2>
           <ProviderSelector
             profileId={activeProfile.id}
             providers={availableProviders}
             initialSelectedIds={selectedProviderIds}
           />
-        </CollapsibleSection>
+        </div>
       )}
 
       {activeProfile && (

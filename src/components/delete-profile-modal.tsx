@@ -27,13 +27,13 @@ export function DeleteProfileModal({ profileId, profileName }: DeleteProfileModa
         render={
           <Button
             variant="destructive"
-            size="icon-sm"
+            size="icon"
             onClick={(e) => e.stopPropagation()}
           />
         }
       >
         <span className="sr-only">Supprimer {profileName}</span>
-        ✕
+        <span aria-hidden="true">✕</span>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
