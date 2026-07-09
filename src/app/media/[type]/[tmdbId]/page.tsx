@@ -113,90 +113,115 @@ export default async function MediaDetailPage({
   const alreadyInSonarr =
     hasSonarrConfig && profile ? await checkInSonarr(profile.id, media.tmdbId) : false;
 
+  const badgePills = (
+    <>
+      <span className="rounded-full border border-mp-border px-3 py-1 text-xs font-semibold text-mp-text-dim">
+        {type === "movie" ? "Film" : "Série"}
+      </span>
+      {genres.slice(0, 2).map((g) => (
+        <span key={g} className="rounded-full border border-mp-border px-3 py-1 text-xs font-semibold text-mp-text-dim">
+          {g}
+        </span>
+      ))}
+      {media.releaseDate && (
+        <span className="rounded-full border border-mp-border px-3 py-1 text-xs font-semibold text-mp-text-dim">
+          {media.releaseDate.slice(0, 4)}
+        </span>
+      )}
+      {media.tmdbRating ? (
+        <span className="rounded-full border border-mp-border px-3 py-1 text-xs font-bold text-mp-accent">
+          ★ {media.tmdbRating.toFixed(1)}
+        </span>
+      ) : null}
+    </>
+  );
+
+  const actionButtons = (
+    <div className="flex flex-wrap gap-3">
+      <form action={toggleWatchlist.bind(null, media.id)}>
+        <Button
+          type="submit"
+          variant={watchlistItem ? "default" : "outline"}
+          className="h-11 gap-2 rounded-full"
+        >
+          <Bookmark size={16} />
+          {watchlistItem ? "Dans ma liste" : "Ajouter à ma liste"}
+        </Button>
+      </form>
+      {type === "movie" && (
+        <form action={toggleMovieWatched.bind(null, media.id)}>
+          <Button
+            type="submit"
+            variant={watchlistItem?.status === "WATCHED" ? "default" : "secondary"}
+            className="h-11 gap-2 rounded-full"
+          >
+            <Check size={16} />
+            {watchlistItem?.status === "WATCHED" ? "Vu" : "Marquer comme vu"}
+          </Button>
+        </form>
+      )}
+      {type === "tv" && profile && (
+        <MarkSeriesWatchedButton mediaId={media.id} watched={watchlistItem?.status === "WATCHED"} />
+      )}
+      <PlanDialog mediaId={media.id} title={media.title} />
+      {hasRadarrConfig && profile && (
+        <RadarrButton profileId={profile.id} tmdbId={media.tmdbId} initiallyPresent={alreadyInRadarr} />
+      )}
+      {hasSonarrConfig && profile && (
+        <SonarrButton profileId={profile.id} tmdbId={media.tmdbId} initiallyPresent={alreadyInSonarr} />
+      )}
+    </div>
+  );
+
   return (
     <div className="px-4 pt-4 pb-10 md:px-10 md:pt-6">
       <BackLink />
 
-      <div className="mt-4 flex flex-wrap items-start gap-7 rounded-[20px] border border-mp-border bg-mp-surface p-6 md:flex-nowrap md:p-10">
-        <div className="relative aspect-[2/3] w-24 shrink-0 overflow-hidden rounded-xl bg-mp-surface-2 md:w-[150px]">
-          {media.poster ? (
+      {/* Hero mobile : cover en fond, poster + titre en incrustation */}
+      <div className="md:hidden">
+        <div className="relative h-[220px] w-full overflow-hidden rounded-2xl bg-mp-surface-2">
+          {detail.backdrop ? (
             <Image
-              src={media.poster}
-              alt={media.title}
+              src={detail.backdrop}
+              alt=""
               fill
               priority
               className="object-cover"
-              sizes="(min-width: 768px) 150px, 96px"
+              sizes="100vw"
             />
+          ) : null}
+          <div className="absolute inset-0 bg-gradient-to-t from-mp-bg via-mp-bg/55 to-transparent" />
+        </div>
+
+        <div className="relative -mt-16 flex items-center gap-3.5 px-1">
+          <div className="relative aspect-[2/3] w-24 shrink-0 overflow-hidden rounded-xl bg-mp-surface-2 ring-1 ring-mp-border">
+            {media.poster ? (
+              <Image src={media.poster} alt={media.title} fill className="object-cover" sizes="96px" />
+            ) : null}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="font-heading text-[26px] leading-tight text-mp-text">{media.title}</h1>
+            <div className="mt-2 flex flex-wrap gap-2">{badgePills}</div>
+          </div>
+        </div>
+
+        <p className="mt-4 text-[15px] leading-relaxed text-mp-text-dim">{media.overview}</p>
+        <div className="mt-4">{actionButtons}</div>
+      </div>
+
+      {/* Panneau desktop */}
+      <div className="mt-4 hidden items-start gap-7 rounded-[20px] border border-mp-border bg-mp-surface p-10 md:flex">
+        <div className="relative aspect-[2/3] w-[150px] shrink-0 overflow-hidden rounded-xl bg-mp-surface-2">
+          {media.poster ? (
+            <Image src={media.poster} alt={media.title} fill priority className="object-cover" sizes="150px" />
           ) : null}
         </div>
 
         <div>
-          <h1 className="mb-2 font-heading text-[28px] text-mp-text md:text-[38px]">{media.title}</h1>
-          <div className="mb-3.5 flex flex-wrap gap-2.5">
-            <span className="rounded-full border border-mp-border px-3 py-1 text-xs font-semibold text-mp-text-dim">
-              {type === "movie" ? "Film" : "Série"}
-            </span>
-            {genres.slice(0, 2).map((g) => (
-              <span key={g} className="rounded-full border border-mp-border px-3 py-1 text-xs font-semibold text-mp-text-dim">
-                {g}
-              </span>
-            ))}
-            {media.releaseDate && (
-              <span className="rounded-full border border-mp-border px-3 py-1 text-xs font-semibold text-mp-text-dim">
-                {media.releaseDate.slice(0, 4)}
-              </span>
-            )}
-            {media.tmdbRating ? (
-              <span className="rounded-full border border-mp-border px-3 py-1 text-xs font-bold text-mp-accent">
-                ★ {media.tmdbRating.toFixed(1)}
-              </span>
-            ) : null}
-          </div>
+          <h1 className="mb-2 font-heading text-[38px] text-mp-text">{media.title}</h1>
+          <div className="mb-3.5 flex flex-wrap gap-2.5">{badgePills}</div>
           <p className="mb-4.5 max-w-xl text-[15px] leading-relaxed text-mp-text-dim">{media.overview}</p>
-
-          <div className="flex flex-wrap gap-3">
-            <form action={toggleWatchlist.bind(null, media.id)}>
-              <Button
-                type="submit"
-                variant={watchlistItem ? "default" : "outline"}
-                className="h-11 gap-2 rounded-full"
-              >
-                <Bookmark size={16} />
-                {watchlistItem ? "Dans ma liste" : "Ajouter à ma liste"}
-              </Button>
-            </form>
-            {type === "movie" && (
-              <form action={toggleMovieWatched.bind(null, media.id)}>
-                <Button
-                  type="submit"
-                  variant={watchlistItem?.status === "WATCHED" ? "default" : "secondary"}
-                  className="h-11 gap-2 rounded-full"
-                >
-                  <Check size={16} />
-                  {watchlistItem?.status === "WATCHED" ? "Vu" : "Marquer comme vu"}
-                </Button>
-              </form>
-            )}
-            {type === "tv" && profile && (
-              <MarkSeriesWatchedButton mediaId={media.id} watched={watchlistItem?.status === "WATCHED"} />
-            )}
-            <PlanDialog mediaId={media.id} title={media.title} />
-            {hasRadarrConfig && profile && (
-              <RadarrButton
-                profileId={profile.id}
-                tmdbId={media.tmdbId}
-                initiallyPresent={alreadyInRadarr}
-              />
-            )}
-            {hasSonarrConfig && profile && (
-              <SonarrButton
-                profileId={profile.id}
-                tmdbId={media.tmdbId}
-                initiallyPresent={alreadyInSonarr}
-              />
-            )}
-          </div>
+          {actionButtons}
         </div>
       </div>
 

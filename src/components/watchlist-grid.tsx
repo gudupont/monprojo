@@ -56,7 +56,13 @@ export function WatchlistGrid({
   }, [currentPage]);
 
   const goToPage = (page: number) => {
-    setCurrentPage(Math.min(Math.max(1, page), totalPages));
+    const clamped = Math.min(Math.max(1, page), totalPages);
+    setCurrentPage((prev) => {
+      if (clamped !== prev) {
+        document.querySelector("main")?.scrollTo({ top: 0 });
+      }
+      return clamped;
+    });
   };
 
   const paginated = items.slice((currentPage - 1) * pageSize, currentPage * pageSize);

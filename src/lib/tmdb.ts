@@ -1,5 +1,6 @@
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
 
 export type TmdbMediaType = "movie" | "tv";
 
@@ -39,6 +40,7 @@ export interface TmdbMediaDetail extends TmdbSearchResult {
   seasons: TmdbSeasonSummary[] | null;
   runtime: number | null;
   episodeRunTime: number | null;
+  backdrop: string | null;
 }
 
 function getApiKey(): string {
@@ -97,6 +99,7 @@ interface TmdbDetailResponse {
   title?: string;
   name?: string;
   poster_path: string | null;
+  backdrop_path: string | null;
   overview: string | null;
   release_date?: string;
   first_air_date?: string;
@@ -136,6 +139,7 @@ export async function getMediaDetail(tmdbId: number, type: TmdbMediaType): Promi
     type,
     title: data.title ?? data.name ?? "Titre inconnu",
     poster: data.poster_path ? `${TMDB_IMAGE_BASE_URL}${data.poster_path}` : null,
+    backdrop: data.backdrop_path ? `${TMDB_BACKDROP_BASE_URL}${data.backdrop_path}` : null,
     overview: data.overview,
     releaseDate: data.release_date ?? data.first_air_date ?? null,
     tmdbRating: data.vote_average,
