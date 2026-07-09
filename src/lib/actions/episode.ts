@@ -18,9 +18,10 @@ async function syncWatchStatusForMedia(mediaId: string, profileId: string) {
 
   const percent = await computeProgressPercent(media, profileId, watchlistItem.status);
   const next = nextWatchStatus(watchlistItem.status, percent);
-  if (next) {
-    await db.watchlistItem.update({ where: { id: watchlistItem.id }, data: next });
-  }
+  await db.watchlistItem.update({
+    where: { id: watchlistItem.id },
+    data: { ...next, hiddenFromContinue: false },
+  });
 }
 
 export async function toggleEpisodeWatched(mediaId: string, season: number, episode: number) {

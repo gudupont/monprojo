@@ -61,6 +61,7 @@ export default async function WatchlistPage({
     tmdbRating: item.media.tmdbRating,
     imdbRating: item.media.imdbRating,
     progress,
+    hiddenFromContinue: item.hiddenFromContinue,
   }));
 
   return (

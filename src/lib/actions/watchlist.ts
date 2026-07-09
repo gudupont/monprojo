@@ -85,7 +85,7 @@ export async function updateWatchlistStatus(itemId: string, status: WatchStatus)
 
   const item = await db.watchlistItem.update({
     where: { id: itemId, profileId: profile.id },
-    data: { status, watchedAt: status === "WATCHED" ? new Date() : null },
+    data: { status, watchedAt: status === "WATCHED" ? new Date() : null, hiddenFromContinue: false },
     include: { media: true },
   });
 
@@ -133,6 +133,18 @@ export async function hideFromContinueWatching(itemId: string) {
   await db.watchlistItem.update({
     where: { id: itemId, profileId: profile.id },
     data: { hiddenFromContinue: true },
+  });
+
+  revalidatePath("/");
+}
+
+export async function unhideFromContinueWatching(itemId: string) {
+  const profile = await getActiveProfile();
+  if (!profile) throw new Error("Aucun profil actif");
+
+  await db.watchlistItem.update({
+    where: { id: itemId, profileId: profile.id },
+    data: { hiddenFromContinue: false },
   });
 
   revalidatePath("/");

@@ -1,13 +1,17 @@
 "use client";
 
-import { MoreVertical, Clock3, PlayCircle, CheckCircle2, Trash2 } from "lucide-react";
+import { MoreVertical, Clock3, PlayCircle, CheckCircle2, Trash2, Eye } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { updateWatchlistStatus, removeFromWatchlist } from "@/lib/actions/watchlist";
+import {
+  updateWatchlistStatus,
+  removeFromWatchlist,
+  unhideFromContinueWatching,
+} from "@/lib/actions/watchlist";
 import type { WatchStatus } from "@prisma/client";
 
 const STATUS_LABELS: Record<WatchStatus, string> = {
@@ -22,7 +26,15 @@ const STATUS_ICONS: Record<WatchStatus, typeof Clock3> = {
 };
 const STATUS_ORDER: WatchStatus[] = ["TO_WATCH", "WATCHING", "WATCHED"];
 
-export function WatchlistCardActions({ id, status }: { id: string; status: WatchStatus }) {
+export function WatchlistCardActions({
+  id,
+  status,
+  hiddenFromContinue,
+}: {
+  id: string;
+  status: WatchStatus;
+  hiddenFromContinue: boolean;
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -41,6 +53,12 @@ export function WatchlistCardActions({ id, status }: { id: string; status: Watch
             </DropdownMenuItem>
           );
         })}
+        {hiddenFromContinue && (
+          <DropdownMenuItem onClick={() => unhideFromContinueWatching(id)}>
+            <Eye size={16} strokeWidth={1.8} />
+            Réafficher dans Continuer à regarder
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           onClick={() => removeFromWatchlist(id)}
           className="text-destructive data-highlighted:bg-destructive/10 data-highlighted:text-destructive"

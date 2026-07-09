@@ -20,6 +20,7 @@ export interface WatchlistCardData {
   tmdbRating: number | null;
   imdbRating: number | null;
   progress: number;
+  hiddenFromContinue: boolean;
 }
 
 export function WatchlistGrid({
@@ -74,7 +75,20 @@ export function WatchlistGrid({
             tmdbRating={data.tmdbRating}
             imdbRating={data.imdbRating}
             progressPercent={data.progress}
-            hoverActions={<WatchlistCardActions id={data.id} status={data.status} />}
+            hoverActions={
+              <WatchlistCardActions
+                id={data.id}
+                status={data.status}
+                hiddenFromContinue={data.hiddenFromContinue}
+              />
+            }
+            footer={
+              data.hiddenFromContinue ? (
+                <span className="inline-block rounded-full border border-mp-border px-2 py-1 text-xs font-semibold text-mp-text-dim">
+                  Masqué de Continuer à regarder
+                </span>
+              ) : undefined
+            }
           />
         ))}
       </div>
