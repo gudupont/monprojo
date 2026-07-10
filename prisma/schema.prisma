@@ -124,6 +124,23 @@ model WatchlistItem {
   @@unique([mediaId, profileId])
 }
 
+enum ImportBatchStatus {
+  RUNNING
+  DONE
+  ROLLED_BACK
+}
+
+model ImportBatch {
+  id           String            @id @default(cuid())
+  profileId    String
+  status       ImportBatchStatus @default(RUNNING)
+  reportJson   String?
+  progressJson String?
+  backupPath   String
+  createdAt    DateTime          @default(now())
+  completedAt  DateTime?
+}
+
 model PlanEntry {
   id                 String   @id @default(cuid())
   mediaId            String
