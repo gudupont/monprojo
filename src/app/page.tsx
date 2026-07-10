@@ -47,7 +47,7 @@ export default async function Home() {
   const continueItems = withProgress
     .filter(({ item, progress }) => progress > 0 && progress < 100 && !item.hiddenFromContinue)
     .slice(0, 6);
-  const watchlistPreview = withProgress.slice(0, 4);
+  const watchlistPreview = withProgress.slice(0, 5);
 
   const upcomingEntries = await db.planEntry.findMany({
     where: { scheduledAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },

@@ -1,5 +1,6 @@
 services:
   monprojo:
+    container_name: monprojo
     image: ghcr.io/gudupont/monprojo:latest
     ports:
       - "3000:3000"
@@ -14,9 +15,9 @@ services:
     restart: unless-stopped
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-
   watchtower:
     image: containrrr/watchtower
+    container_name: monprojo-watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
@@ -24,6 +25,5 @@ services:
       WATCHTOWER_CLEANUP: "true"
       WATCHTOWER_POLL_INTERVAL: "1800"
     restart: unless-stopped
-
 volumes:
   monprojo-data:
