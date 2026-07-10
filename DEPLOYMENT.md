@@ -61,8 +61,24 @@ Fichiers déjà en place dans le repo :
 3. Container Manager va **tirer** (`pull`) l'image `ghcr.io/gudupont/monprojo:latest` grâce aux identifiants du registry enregistrés à l'étape 3, plutôt que de la builder — plus besoin des sources.
 
 **Étape 5 — Mettre à jour après un nouveau push** : deux options.
-- **Manuel** : Container Manager → Projet `monprojo` → **Action** → **Mettre à jour** (ou dans l'onglet Image, re-télécharger `latest` puis recréer le conteneur).
-- **Automatique** : ajouter un conteneur [Watchtower](https://github.com/containrrr/watchtower) à côté (image `containrrr/watchtower`, volume `/var/run/docker.sock:/var/run/docker.sock`) — il surveille les images en cours d'exécution et recrée automatiquement le conteneur `monprojo` dès qu'une nouvelle version `latest` est poussée sur GHCR (poll toutes les X minutes, configurable). Nécessite que Watchtower ait aussi accès aux identifiants GHCR (variable d'env `REPO_USER`/`REPO_PASS` ou fichier `~/.docker/config.json` partagé).
+
+- **Manuel** (recommandé, garde le contrôle) : le bouton "mise à jour disponible" de Container Manager vit sur l'onglet **Image**, pas sur l'onglet **Projet** — un Projet basé sur `docker-compose.yml` ne détecte pas tout seul une nouvelle image distante. Flow complet, sans jamais supprimer/réimporter l'image ni toucher au volume `monprojo-data` :
+  1. Container Manager → onglet **Image** → sélectionner `ghcr.io/gudupont/monprojo` → **Vérifier la mise à jour** (le badge, si supporté par ta version de DSM pour un registry privé comme GHCR, apparaît ici) → **Mettre à jour** pour pull la nouvelle image sous le tag `latest`.
+  2. Onglet **Projet** → `monprojo` → **Arrêter**.
+  3. **Nettoyer** — supprime le conteneur arrêté, pas l'image ni le volume nommé `monprojo-data` (la donnée SQLite est préservée).
+  4. **Démarrer** — recrée le conteneur à partir de l'image locale déjà mise à jour à l'étape 1.
+
+  ⚠️ Le badge "mise à jour disponible" de Synology est fiabilisé pour Docker Hub ; avec un registry privé comme GHCR (manifest multi-arch), il peut ne jamais s'afficher même si une nouvelle image existe. Dans le doute, cliquer "Vérifier la mise à jour" manuellement sur l'Image plutôt que d'attendre le badge.
+
+- **Automatique** (recommandé si tu veux du zéro-clic) : `docker-compose.yml` inclut déjà un service `watchtower` (image `containrrr/watchtower`). Une fois le Projet redémarré avec ce compose à jour :
+  - Watchtower poll GHCR toutes les 30 min (`WATCHTOWER_POLL_INTERVAL=1800`) et ne surveille **que** `monprojo` grâce au label `com.centurylinklabs.watchtower.enable=true` posé sur ce service (`WATCHTOWER_LABEL_ENABLE=true` côté Watchtower) — il ne touche pas aux autres conteneurs du NAS (Jackett, etc.).
+  - Dès qu'un digest différent est détecté sur `ghcr.io/gudupont/monprojo:latest`, il stop, pull, recrée le conteneur et nettoie l'ancienne image (`WATCHTOWER_CLEANUP=true`) — le volume `monprojo-data` n'est jamais touché.
+  - Les identifiants GHCR n'ont pas besoin d'être redéclarés pour Watchtower : il pull via le socket Docker (`/var/run/docker.sock`), donc réutilise l'authentification registry déjà enregistrée dans Container Manager (étape 3 ci-dessus).
+  - **Déclenchement manuel** (pour forcer un check juste après un push, sans attendre le poll) : ouvrir un terminal SSH sur le NAS puis :
+    ```bash
+    docker exec watchtower /watchtower --run-once
+    ```
+    Force un check immédiat de `monprojo` (et met à jour si une nouvelle image est dispo), sans exposer de port supplémentaire ni ajouter de token/API HTTP.
 
 La donnée SQLite reste dans le volume nommé `monprojo-data`, jamais dans l'image — une mise à jour d'image ne touche pas les données.
 
