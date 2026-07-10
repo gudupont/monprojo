@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState, useTransition } from "react";
 import { MoreVertical, Clock3, PlayCircle, CheckCircle2, Trash2, Eye } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,6 +36,27 @@ export function WatchlistCardActions({
   status: WatchStatus;
   hiddenFromContinue: boolean;
 }) {
+  const [confirming, setConfirming] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimer.current) clearTimeout(resetTimer.current);
+    };
+  }, []);
+
+  function handleRemoveClick() {
+    if (!confirming) {
+      setConfirming(true);
+      resetTimer.current = setTimeout(() => setConfirming(false), 3000);
+      return;
+    }
+
+    if (resetTimer.current) clearTimeout(resetTimer.current);
+    startTransition(() => removeFromWatchlist(id));
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -60,11 +82,14 @@ export function WatchlistCardActions({
           </DropdownMenuItem>
         )}
         <DropdownMenuItem
-          onClick={() => removeFromWatchlist(id)}
+          onClick={handleRemoveClick}
+          closeOnClick={confirming}
+          disabled={isPending}
+          aria-live="polite"
           className="text-destructive data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
         >
           <Trash2 size={16} strokeWidth={1.8} />
-          Retirer
+          {confirming ? "Confirmer ?" : "Retirer"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

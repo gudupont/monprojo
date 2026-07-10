@@ -91,7 +91,7 @@ export function WatchlistGrid({
             footer={
               data.hiddenFromContinue ? (
                 <span className="inline-block rounded-full border border-mp-border px-2 py-1 text-xs font-semibold text-mp-text-dim">
-                  Masqué de Continuer à regarder
+                  Retiré de la reprise
                 </span>
               ) : undefined
             }

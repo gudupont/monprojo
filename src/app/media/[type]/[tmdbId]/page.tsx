@@ -86,6 +86,11 @@ export default async function MediaDetailPage({
     return `${day}/${month}/${year}`;
   }
 
+  function isGenericEpisodeTitle(title: string | null | undefined, episode: number): boolean {
+    if (!title) return true;
+    return new RegExp(`^(épisode|episode)\\s+${episode}$`, "i").test(title.trim());
+  }
+
   const seasonWatchedCount = activeSeason
     ? episodeWatches.filter((e) => e.season === activeSeason.season).length
     : 0;
@@ -152,7 +157,7 @@ export default async function MediaDetailPage({
         <form action={toggleMovieWatched.bind(null, media.id)}>
           <Button
             type="submit"
-            variant={watchlistItem?.status === "WATCHED" ? "default" : "secondary"}
+            variant={watchlistItem?.status === "WATCHED" ? "secondary" : "outline"}
             className="h-11 gap-2 rounded-full"
           >
             <Check size={16} />
@@ -282,7 +287,8 @@ export default async function MediaDetailPage({
           <div className="flex flex-col gap-2.5">
             {activeSeasonEpisodeNumbers.map((ep) => {
               const watched = watchedSet.has(`${activeSeason.season}-${ep}`);
-              const title = titleByEpisode.get(ep);
+              const rawTitle = titleByEpisode.get(ep);
+              const title = isGenericEpisodeTitle(rawTitle, ep) ? null : rawTitle;
               return (
                 <form key={ep} action={toggleEpisodeWatched.bind(null, media.id, activeSeason.season, ep)}>
                   <button

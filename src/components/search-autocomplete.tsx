@@ -35,6 +35,7 @@ export function SearchAutocomplete({ variant = "page", initialQuery = "", initia
   const [announcement, setAnnouncement] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const focusedRef = useRef(false);
   const listboxId = useId();
 
   useEffect(() => {
@@ -55,12 +56,12 @@ export function SearchAutocomplete({ variant = "page", initialQuery = "", initia
         .then((data: Suggestion[]) => {
           setSuggestions(Array.isArray(data) ? data : []);
           setActiveIndex(-1);
-          setOpen(true);
+          if (focusedRef.current) setOpen(true);
         })
         .catch((error) => {
           if (error.name !== "AbortError") {
             setSuggestions([]);
-            setOpen(true);
+            if (focusedRef.current) setOpen(true);
           }
         })
         .finally(() => setLoading(false));
@@ -151,7 +152,13 @@ export function SearchAutocomplete({ variant = "page", initialQuery = "", initia
           aria-autocomplete="list"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          onFocus={() => query.trim().length >= 3 && setOpen(true)}
+          onFocus={() => {
+            focusedRef.current = true;
+            if (query.trim().length >= 3) setOpen(true);
+          }}
+          onBlur={() => {
+            focusedRef.current = false;
+          }}
           onKeyDown={handleKeyDown}
           placeholder={variant === "header" ? "Rechercher…" : "Un titre, une série…"}
           aria-label="Recherche"

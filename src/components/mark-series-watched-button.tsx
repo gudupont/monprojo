@@ -21,7 +21,7 @@ export function MarkSeriesWatchedButton({ mediaId, watched }: { mediaId: string;
     <>
       <Button
         type="button"
-        variant={watched ? "default" : "secondary"}
+        variant={watched ? "secondary" : "outline"}
         className="h-11 gap-2 rounded-full"
         onClick={handleClick}
       >

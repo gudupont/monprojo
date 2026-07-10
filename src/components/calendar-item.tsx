@@ -55,7 +55,7 @@ export function CalendarItem({ date, media, variant, label, subtitle, actions, s
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border p-4 ${
+      className={`relative flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border p-4 ${
         isToday
           ? "border-mp-accent bg-mp-accent/10"
           : isRelease
@@ -88,7 +88,7 @@ export function CalendarItem({ date, media, variant, label, subtitle, actions, s
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/media/${media.type.toLowerCase()}/${media.tmdbId}`}
-            className="line-clamp-2 text-sm font-bold text-mp-text"
+            className="line-clamp-2 text-sm font-bold text-mp-text after:absolute after:inset-0"
           >
             {media.title} · {media.type === "TV" ? "Série" : "Film"}
             {isRelease && label ? ` · ${label}` : ""}
@@ -103,7 +103,7 @@ export function CalendarItem({ date, media, variant, label, subtitle, actions, s
         </div>
         {subtitle}
       </div>
-      {actions && <div className="ml-auto shrink-0">{actions}</div>}
+      {actions && <div className="relative z-10 ml-auto shrink-0">{actions}</div>}
     </div>
   );
 }
