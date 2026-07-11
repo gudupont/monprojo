@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getActiveProfile } from "@/lib/session";
 import { getOrRefreshMedia } from "@/lib/actions/media";
 import { parseSeasons } from "@/lib/progress";
+import { pushMediaToPlexWatchlist } from "@/lib/plex-sync";
 import type { TmdbMediaType } from "@/lib/tmdb";
 import type { WatchStatus } from "@prisma/client";
 
@@ -33,11 +34,26 @@ export async function addToWatchlist(mediaId: string) {
   const profile = await getActiveProfile();
   if (!profile) throw new Error("Aucun profil actif");
 
+  const existing = await db.watchlistItem.findUnique({
+    where: { mediaId_profileId: { mediaId, profileId: profile.id } },
+  });
+
   await db.watchlistItem.upsert({
     where: { mediaId_profileId: { mediaId, profileId: profile.id } },
     create: { mediaId, profileId: profile.id },
     update: {},
   });
+
+  if (!existing) {
+    const media = await db.media.findUnique({ where: { id: mediaId } });
+    if (media) {
+      try {
+        await pushMediaToPlexWatchlist(profile, media);
+      } catch {
+        // best-effort: le push Plex ne doit jamais bloquer l'ajout à la Watchlist MonProjo
+      }
+    }
+  }
 
   revalidatePath("/watchlist");
 }
@@ -54,6 +70,14 @@ export async function toggleWatchlist(mediaId: string) {
     await db.watchlistItem.delete({ where: { id: existing.id } });
   } else {
     await db.watchlistItem.create({ data: { mediaId, profileId: profile.id } });
+    const media = await db.media.findUnique({ where: { id: mediaId } });
+    if (media) {
+      try {
+        await pushMediaToPlexWatchlist(profile, media);
+      } catch {
+        // best-effort: le push Plex ne doit jamais bloquer l'ajout à la Watchlist MonProjo
+      }
+    }
   }
 
   revalidatePath("/", "layout");

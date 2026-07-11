@@ -12,6 +12,7 @@ import { computeProgressPercent } from "@/lib/media-progress";
 import { getProfileProviders } from "@/lib/actions/provider";
 import { getRadarrStatus, checkInRadarr } from "@/lib/actions/radarr";
 import { getSonarrStatus, checkInSonarr } from "@/lib/actions/sonarr";
+import { getPlexServerConfigStatus, checkPlexAvailability } from "@/lib/actions/plex";
 import type { TmdbWatchProviders } from "@/lib/tmdb";
 import { Button } from "@/components/ui/button";
 import { PlanDialog } from "@/components/plan-dialog";
@@ -20,6 +21,7 @@ import { BackLink } from "@/components/back-link";
 import { WatchProviders } from "@/components/watch-providers";
 import { RadarrButton } from "@/components/radarr-button";
 import { SonarrButton } from "@/components/sonarr-button";
+import { PlexButton } from "@/components/plex-button";
 import { SeasonSelect } from "@/components/season-select";
 import { SeasonWatchButton } from "@/components/season-watch-confirm-modal";
 import { MarkSeriesWatchedButton } from "@/components/mark-series-watched-button";
@@ -118,6 +120,12 @@ export default async function MediaDetailPage({
   const alreadyInSonarr =
     hasSonarrConfig && profile ? await checkInSonarr(profile.id, media.tmdbId) : false;
 
+  const hasPlexServerConfig = profile ? await getPlexServerConfigStatus(profile.id) : false;
+  const plexAvailable =
+    hasPlexServerConfig && profile
+      ? await checkPlexAvailability(profile.id, media.tmdbId, type === "movie" ? "movie" : "show")
+      : false;
+
   const badgePills = (
     <>
       <span className="rounded-full border border-mp-border px-3 py-1 text-xs font-semibold text-mp-text-dim">
@@ -175,6 +183,7 @@ export default async function MediaDetailPage({
       {hasSonarrConfig && profile && (
         <SonarrButton profileId={profile.id} tmdbId={media.tmdbId} initiallyPresent={alreadyInSonarr} />
       )}
+      {hasPlexServerConfig && profile && <PlexButton available={plexAvailable} />}
     </div>
   );
 
