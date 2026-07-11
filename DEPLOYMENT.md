@@ -79,6 +79,7 @@ Fichiers déjà en place dans le repo :
     docker exec watchtower /watchtower --run-once
     ```
     Force un check immédiat de `monprojo` (et met à jour si une nouvelle image est dispo), sans exposer de port supplémentaire ni ajouter de token/API HTTP.
+  - **Notifications Slack sur déploiement** : Watchtower peut notifier un canal Slack à chaque mise à jour automatique réelle (variables `WATCHTOWER_NOTIFICATION_SLACK_*` déjà déclarées dans `docker-compose.yml`). Tutoriel complet pas-à-pas (création du webhook Slack, configuration `.env`, test) : [`docs/WATCHTOWER_SLACK.md`](docs/WATCHTOWER_SLACK.md).
 
 La donnée SQLite reste dans le volume nommé `monprojo-data`, jamais dans l'image — une mise à jour d'image ne touche pas les données.
 

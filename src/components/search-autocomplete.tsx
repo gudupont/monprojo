@@ -14,6 +14,7 @@ interface Suggestion {
   poster: string | null;
   releaseDate: string | null;
   tmdbRating: number | null;
+  inWatchlist: boolean;
 }
 
 type AddState = "idle" | "loading" | "added" | "already-added" | "error";
@@ -54,7 +55,16 @@ export function SearchAutocomplete({ variant = "page", initialQuery = "", initia
       fetch(`/api/search/autocomplete?q=${encodeURIComponent(query)}`, { signal: controller.signal })
         .then((res) => res.json())
         .then((data: Suggestion[]) => {
-          setSuggestions(Array.isArray(data) ? data : []);
+          const items = Array.isArray(data) ? data : [];
+          setSuggestions(items);
+          setAddStates((prev) => {
+            const next = { ...prev };
+            for (const item of items) {
+              const key = `${item.type}-${item.tmdbId}`;
+              next[key] = item.inWatchlist ? "already-added" : "idle";
+            }
+            return next;
+          });
           setActiveIndex(-1);
           if (focusedRef.current) setOpen(true);
         })

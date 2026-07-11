@@ -3,6 +3,8 @@ import { searchMedia } from "@/lib/tmdb";
 import { MediaCard } from "@/components/media-card";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
 import { QuickAddActions } from "@/components/quick-add-actions";
+import { getActiveProfile } from "@/lib/session";
+import { db } from "@/lib/db";
 
 const TYPE_TABS = [
   { key: "tout", label: "Tout" },
@@ -23,6 +25,19 @@ export default async function SearchPage({
     if (activeType === "serie") return item.type === "tv";
     return true;
   });
+
+  const profile = await getActiveProfile();
+  let watchlistTmdbIds = new Set<number>();
+  if (profile) {
+    const items = await db.watchlistItem.findMany({
+      where: {
+        profileId: profile.id,
+        media: { tmdbId: { in: results.map((item) => item.tmdbId) } },
+      },
+      select: { media: { select: { tmdbId: true } } },
+    });
+    watchlistTmdbIds = new Set(items.map((item) => item.media.tmdbId));
+  }
 
   return (
     <div className="px-4 pt-5 md:px-10 md:pt-0">
@@ -70,7 +85,12 @@ export default async function SearchPage({
             releaseDate={item.releaseDate}
             tmdbRating={item.tmdbRating}
             hoverActions={
-              <QuickAddActions tmdbId={item.tmdbId} type={item.type} title={item.title} />
+              <QuickAddActions
+                tmdbId={item.tmdbId}
+                type={item.type}
+                title={item.title}
+                initialInWatchlist={watchlistTmdbIds.has(item.tmdbId)}
+              />
             }
           />
         ))}

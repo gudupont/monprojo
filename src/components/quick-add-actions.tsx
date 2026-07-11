@@ -18,13 +18,15 @@ export function QuickAddActions({
   tmdbId,
   type,
   title,
+  initialInWatchlist,
 }: {
   tmdbId: number;
   type: TmdbMediaType;
   title: string;
+  initialInWatchlist?: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
-  const [state, setState] = useState<WatchlistButtonState>("idle");
+  const [state, setState] = useState<WatchlistButtonState>(initialInWatchlist ? "added" : "idle");
 
   return (
     <div className="flex gap-1.5">
