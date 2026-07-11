@@ -37,7 +37,7 @@ Image Docker de prod : `Dockerfile` (multi-stage) + `docker-compose.yml`. Pour u
 
 La route `POST /api/sync/plex` déclenche la synchronisation Plex (Watchlist + statut vu) de tous les profils configurés. Elle est protégée par la variable d'environnement `PLEX_SYNC_SECRET`, à passer en header `Authorization: Bearer <secret>` ou en paramètre `?token=<secret>`.
 
-Tuto complet (récupération des tokens Plex, config du profil, secret, cron) : voir [`PLEX_SYNC.md`](./PLEX_SYNC.md).
+Tuto complet (récupération des tokens Plex, config du profil, secret, cron) : voir [`PLEX_SYNC.md`](./docs/PLEX_SYNC.md).
 
 Aucun scheduler n'est lancé dans le conteneur : le déclenchement périodique est délégué à un cron externe, par exemple toutes les 15 minutes :
 
