@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { ProviderSelector } from "@/components/provider-selector";
 import { RadarrSettings } from "@/components/radarr-settings";
 import { SonarrSettings } from "@/components/sonarr-settings";
+import { PlexSettings } from "@/components/plex-settings";
+import { getPlexStatus, type PlexStatus } from "@/lib/actions/plex";
 import { DeleteProfileModal } from "@/components/delete-profile-modal";
 import { RenameProfileButton } from "@/components/rename-profile-button";
 import { TvtimeImport, type InitialImportBatch } from "@/components/tvtime-import";
@@ -134,6 +136,20 @@ export default async function ProfilesPage() {
               hasConfig={Boolean(activeProfile.sonarrUrl && activeProfile.sonarrApiKey)}
             />
           </div>
+
+          {plexStatus && (
+            <div className="mb-8">
+              <h2 className="mb-3 text-sm font-semibold text-mp-text-dim">Plex</h2>
+              <PlexSettings
+                profileId={activeProfile.id}
+                initialServerUrl={activeProfile.plexServerUrl ?? ""}
+                hasAccountConfig={plexStatus.hasAccountConfig}
+                hasServerConfig={plexStatus.hasServerConfig}
+                lastSyncAt={plexStatus.lastSyncAt}
+                syncError={plexStatus.syncError}
+              />
+            </div>
+          )}
 
           <div>
             <TvtimeImport initialBatch={currentImportBatch} />

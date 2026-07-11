@@ -241,7 +241,13 @@ describe("pushMediaToPlexWatchlist", () => {
 
     await pushMediaToPlexWatchlist(profile, media);
 
-    expect(findPlexDiscoverItemByTmdbId).toHaveBeenCalledWith(profile.plexAccountToken, media.tmdbId, "movie");
+    expect(findPlexDiscoverItemByTmdbId).toHaveBeenCalledWith(
+      profile.plexAccountToken,
+      media.tmdbId,
+      "movie",
+      media.title,
+      null,
+    );
     expect(addToPlexAccountWatchlist).toHaveBeenCalledWith(profile.plexAccountToken, "rating-key-1");
   });
 

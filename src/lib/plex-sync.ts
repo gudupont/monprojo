@@ -92,6 +92,8 @@ export async function pushMediaToPlexWatchlist(profile: Profile, media: Media): 
       profile.plexAccountToken,
       media.tmdbId,
       media.type === "MOVIE" ? "movie" : "show",
+      media.title,
+      media.releaseDate ? Number(media.releaseDate.slice(0, 4)) : null,
     );
     if (!ratingKey) return;
 

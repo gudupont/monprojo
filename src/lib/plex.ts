@@ -1,5 +1,4 @@
 const PLEX_TV_BASE_URL = "https://plex.tv/api/v2";
-const PLEX_METADATA_BASE_URL = "https://metadata.provider.plex.tv";
 const PLEX_DISCOVER_BASE_URL = "https://discover.provider.plex.tv";
 const PLEX_CLIENT_IDENTIFIER = "monprojo";
 
@@ -88,7 +87,7 @@ interface PlexMetadataContainer {
 
 export async function getPlexAccountWatchlist(accountToken: string): Promise<PlexWatchlistItem[]> {
   const data = await plexFetch<PlexMetadataContainer>(
-    `${PLEX_METADATA_BASE_URL}/library/sections/watchlist/all`,
+    `${PLEX_DISCOVER_BASE_URL}/library/sections/watchlist/all`,
     accountToken,
   );
 
@@ -143,20 +142,63 @@ export async function getPlexServerWatchedEpisodes(
     }));
 }
 
+interface PlexSearchResultsContainer {
+  MediaContainer: { SearchResults?: { SearchResult?: { Metadata: PlexMetadataItem }[] }[] };
+}
+
 export async function findPlexDiscoverItemByTmdbId(
   accountToken: string,
   tmdbId: number,
   type: PlexMediaType,
+  title: string,
+  year?: number | null,
 ): Promise<string | null> {
   try {
-    const data = await plexFetch<PlexMetadataContainer>(
-      `${PLEX_DISCOVER_BASE_URL}/library/all?guid=${encodeURIComponent(`tmdb://${tmdbId}`)}&type=${type === "movie" ? 1 : 2}`,
+    const searchType = type === "movie" ? "movies" : "tv";
+    const data = await plexFetch<PlexSearchResultsContainer>(
+      `${PLEX_DISCOVER_BASE_URL}/library/search?query=${encodeURIComponent(title)}&searchTypes=${searchType}&searchProviders=discover&limit=10`,
       accountToken,
     );
-    const match = data.MediaContainer.Metadata?.[0];
-    return match?.ratingKey ?? null;
+    const candidates = (data.MediaContainer.SearchResults ?? [])
+      .flatMap((group) => group.SearchResult ?? [])
+      .map((r) => r.Metadata)
+      .filter((m) => m.type === type);
+    const narrowed = year ? candidates.filter((c) => !c.year || c.year === year) : candidates;
+    const targetGuid = `tmdb://${tmdbId}`;
+
+    for (const candidate of (narrowed.length > 0 ? narrowed : candidates).slice(0, 5)) {
+      const detail = await plexFetch<PlexMetadataContainer>(
+        `${PLEX_DISCOVER_BASE_URL}/library/metadata/${candidate.ratingKey}?includeGuids=1`,
+        accountToken,
+      );
+      const match = detail.MediaContainer.Metadata?.[0];
+      if ((match?.Guid ?? []).some((g) => g.id === targetGuid)) {
+        return candidate.ratingKey;
+      }
+    }
+    return null;
   } catch {
     return null;
+  }
+}
+
+export async function checkPlexLibraryAvailability(
+  serverUrl: string,
+  serverToken: string,
+  tmdbId: number,
+  type: PlexMediaType,
+): Promise<boolean> {
+  try {
+    const data = await plexFetch<PlexMetadataContainer>(
+      `${serverUrl.replace(/\/+$/, "")}/library/all?type=${type === "movie" ? 1 : 2}&includeGuids=1`,
+      serverToken,
+    );
+    const targetGuid = `tmdb://${tmdbId}`;
+    return (data.MediaContainer.Metadata ?? []).some((item) =>
+      (item.Guid ?? []).some((g) => g.id === targetGuid),
+    );
+  } catch {
+    return false;
   }
 }
 

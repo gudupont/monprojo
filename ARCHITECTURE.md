@@ -52,6 +52,7 @@ Pas d'authentification — le "profil actif" est stocké dans un cookie httpOnly
 - `lib/tmdb.ts` : recherche (`searchMedia`) et détail (`getMediaDetail`) via `https://api.themoviedb.org/3`, clé dans `TMDB_API_KEY`, langue forcée `fr-FR`.
 - `lib/omdb.ts` : `getImdbRating(imdbId)` — fallback uniquement, best-effort (erreurs avalées silencieusement côté appelant, `lib/actions/media.ts`).
 - `lib/actions/media.ts::getOrRefreshMedia(tmdbId, type)` : point d'entrée unique pour obtenir un `Media` local à jour — upsert avec cache 24h. Toutes les features qui ont besoin d'un `mediaId` (watchlist, planning) doivent passer par cette fonction en amont si elles ne partent que d'un `tmdbId` TMDb (cf. `search-hover-quick-add`, `search-autocomplete-watchlist`).
+- `lib/plex.ts`/`lib/plex-sync.ts` : intégration Plex (Watchlist compte, statut vu serveur, vérification de disponibilité en bibliothèque via `checkPlexLibraryAvailability`). Guide néophyte de configuration (obtention des tokens, dépannage) : voir `docs/PLEX_SETUP.md`.
 
 ## 6. Routes (App Router)
 

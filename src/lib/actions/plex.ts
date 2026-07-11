@@ -1,7 +1,12 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { testPlexAccountConnection, testPlexServerConnection } from "@/lib/plex";
+import {
+  testPlexAccountConnection,
+  testPlexServerConnection,
+  checkPlexLibraryAvailability,
+  type PlexMediaType,
+} from "@/lib/plex";
 import { revalidatePath } from "next/cache";
 
 export interface SavePlexConfigResult {
@@ -75,4 +80,26 @@ export async function getPlexStatus(profileId: string): Promise<PlexStatus> {
     lastSyncAt: profile?.lastPlexSyncAt ?? null,
     syncError: profile?.plexSyncError ?? null,
   };
+}
+
+export async function getPlexServerConfigStatus(profileId: string): Promise<boolean> {
+  const profile = await db.profile.findUnique({
+    where: { id: profileId },
+    select: { plexServerUrl: true, plexServerToken: true },
+  });
+  return Boolean(profile?.plexServerUrl && profile?.plexServerToken);
+}
+
+export async function checkPlexAvailability(
+  profileId: string,
+  tmdbId: number,
+  type: PlexMediaType,
+): Promise<boolean> {
+  const profile = await db.profile.findUnique({
+    where: { id: profileId },
+    select: { plexServerUrl: true, plexServerToken: true },
+  });
+  if (!profile?.plexServerUrl || !profile?.plexServerToken) return false;
+
+  return checkPlexLibraryAvailability(profile.plexServerUrl, profile.plexServerToken, tmdbId, type);
 }
