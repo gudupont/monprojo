@@ -2,6 +2,7 @@ import Link from "next/link";
 import { searchMedia } from "@/lib/tmdb";
 import { MediaCard } from "@/components/media-card";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
+import { QuickAddActions } from "@/components/quick-add-actions";
 
 const TYPE_TABS = [
   { key: "tout", label: "Tout" },
@@ -58,7 +59,7 @@ export default async function SearchPage({
         <p className="pb-10 text-sm text-mp-text-dim">Aucun résultat pour cette recherche.</p>
       )}
 
-      <div className="grid grid-cols-2 gap-5 pb-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-5 pb-10 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
         {results.map((item) => (
           <MediaCard
             key={`${item.type}-${item.tmdbId}`}
@@ -68,6 +69,9 @@ export default async function SearchPage({
             poster={item.poster}
             releaseDate={item.releaseDate}
             tmdbRating={item.tmdbRating}
+            hoverActions={
+              <QuickAddActions tmdbId={item.tmdbId} type={item.type} title={item.title} />
+            }
           />
         ))}
       </div>

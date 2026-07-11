@@ -31,9 +31,11 @@ export function SonarrButton({ profileId, tmdbId, initiallyPresent }: SonarrButt
 
   if (state === "already_present" || state === "added") {
     return (
-      <Button type="button" variant="secondary" className="gap-2 rounded-full" disabled>
+      <Button type="button" variant="secondary" className="h-11 gap-2 rounded-full" disabled>
         <Check size={16} />
-        {state === "added" ? "Ajouté à Sonarr" : "Déjà dans Sonarr"}
+        <span role="status" aria-live="polite">
+          {state === "added" ? "Ajouté à Sonarr" : "Déjà dans Sonarr"}
+        </span>
       </Button>
     );
   }
@@ -43,14 +45,20 @@ export function SonarrButton({ profileId, tmdbId, initiallyPresent }: SonarrButt
       <Button
         type="button"
         variant="outline"
-        className="gap-2 rounded-full"
+        className="h-11 gap-2 rounded-full"
         onClick={handleClick}
         disabled={isPending}
       >
         {state === "error" ? <AlertCircle size={16} /> : <Download size={16} />}
-        {isPending ? "Ajout en cours…" : "Ajouter à Sonarr"}
+        <span role="status" aria-live="polite">
+          {isPending ? "Ajout en cours…" : "Ajouter à Sonarr"}
+        </span>
       </Button>
-      {state === "error" && error && <p className="text-xs font-semibold text-red-400">{error}</p>}
+      {state === "error" && error && (
+        <p role="status" aria-live="polite" className="text-xs font-semibold text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

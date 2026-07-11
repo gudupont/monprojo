@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import { getActiveProfile } from "@/lib/session";
 import { db } from "@/lib/db";
 import { computeProgressPercent } from "@/lib/media-progress";
+import { hideFromContinueWatching } from "@/lib/actions/watchlist";
 import { MediaCard } from "@/components/media-card";
+import { CalendarItem } from "@/components/calendar-item";
 
 const MONTHS_ABBR = [
   "janv.",
@@ -19,14 +21,6 @@ const MONTHS_ABBR = [
   "nov.",
   "déc.",
 ];
-
-function dateBadgeLabel(date: Date): string {
-  const today = new Date(new Date().setHours(0, 0, 0, 0));
-  const diffDays = Math.round((date.getTime() - today.getTime()) / 86400000);
-  if (diffDays === 0) return "Aujourd'hui";
-  if (diffDays === 1) return "Demain";
-  return `${date.getDate()} ${MONTHS_ABBR[date.getMonth()]}`;
-}
 
 export default async function Home() {
   const profile = await getActiveProfile();
@@ -50,8 +44,10 @@ export default async function Home() {
     })),
   );
 
-  const continueItems = withProgress.filter(({ progress }) => progress > 0 && progress < 100).slice(0, 6);
-  const watchlistPreview = withProgress.slice(0, 4);
+  const continueItems = withProgress
+    .filter(({ item, progress }) => progress > 0 && progress < 100 && !item.hiddenFromContinue)
+    .slice(0, 6);
+  const watchlistPreview = withProgress.slice(0, 5);
 
   const upcomingEntries = await db.planEntry.findMany({
     where: { scheduledAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
@@ -72,9 +68,9 @@ export default async function Home() {
       {continueItems.length > 0 && (
         <section className="mb-8 md:mb-10">
           <h2 className="mb-4 font-heading text-2xl text-mp-text md:text-[26px]">Continuer à regarder</h2>
-          <div className="flex gap-4 overflow-x-auto pb-1">
+          <div className="flex gap-4 no-scrollbar overflow-x-auto pb-1">
             {continueItems.map(({ item, progress }) => (
-              <div key={item.id} className="w-32 shrink-0 md:w-40">
+              <div key={item.id} className="w-44 shrink-0 md:w-48">
                 <MediaCard
                   tmdbId={item.media.tmdbId}
                   type={item.media.type}
@@ -83,6 +79,20 @@ export default async function Home() {
                   releaseDate={item.media.releaseDate}
                   tmdbRating={item.media.tmdbRating}
                   progressPercent={progress}
+                  hoverActions={
+                    <form action={hideFromContinueWatching.bind(null, item.id)}>
+                      <button
+                        type="submit"
+                        aria-label="Retirer de « Continuer à regarder »"
+                        className="flex size-11 cursor-pointer items-center justify-center rounded-full bg-black/55 text-white outline-none backdrop-blur-sm hover:bg-black/70 focus-visible:ring-2 focus-visible:ring-mp-accent"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </form>
+                  }
                 />
               </div>
             ))}
@@ -90,8 +100,8 @@ export default async function Home() {
         </section>
       )}
 
-      <div className="mb-8 flex flex-wrap items-center gap-5 rounded-[18px] bg-gradient-to-br from-mp-accent to-[#B5482E] p-5 md:mb-10 md:p-7">
-        <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl bg-black/25 text-mp-accent-ink">
+      <div className="mb-8 flex flex-wrap items-center gap-5 rounded-[18px] bg-mp-surface-2 p-5 ring-1 ring-mp-border md:mb-10 md:p-7">
+        <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl bg-mp-accent/15 text-mp-accent">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <rect x="4" y="4" width="16" height="16" rx="3" />
             <circle cx="9" cy="9" r="1.2" fill="currentColor" stroke="none" />
@@ -102,14 +112,14 @@ export default async function Home() {
           </svg>
         </div>
         <div className="min-w-[180px] flex-1">
-          <div className="font-heading text-xl text-mp-accent-ink md:text-[22px]">Indécis ce soir ?</div>
-          <div className="mt-1 text-[13px] text-mp-accent-ink/75">
+          <div className="font-heading text-xl text-mp-text md:text-[22px]">Indécis ce soir ?</div>
+          <div className="mt-1 text-[13px] text-mp-text-dim">
             Laisse MonProjo choisir pour toi parmi ta liste et tes goûts.
           </div>
         </div>
         <Link
           href="/decide"
-          className="shrink-0 rounded-full bg-mp-accent-ink px-5.5 py-3 text-sm font-bold text-mp-accent"
+          className="shrink-0 rounded-full bg-mp-accent px-5.5 py-3 text-sm font-bold text-mp-accent-ink"
         >
           Décide pour moi
         </Link>
@@ -127,21 +137,7 @@ export default async function Home() {
         ) : (
           <div className="flex flex-col gap-2.5">
             {upcomingEntries.map((entry) => (
-              <Link
-                key={entry.id}
-                href={`/media/${entry.media.type.toLowerCase()}/${entry.media.tmdbId}`}
-                className="flex items-center gap-3.5 rounded-xl border border-mp-border bg-mp-surface p-2.5"
-              >
-                <div className="w-13 shrink-0 text-[11px] font-bold uppercase text-mp-accent">
-                  {dateBadgeLabel(entry.scheduledAt)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-bold text-mp-text">{entry.media.title}</div>
-                  <div className="mt-0.5 text-xs text-mp-text-dim">
-                    {entry.scheduledAt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-                  </div>
-                </div>
-              </Link>
+              <CalendarItem key={entry.id} date={entry.scheduledAt} media={entry.media} variant="plan" />
             ))}
           </div>
         )}
@@ -155,9 +151,9 @@ export default async function Home() {
               Voir tout
             </Link>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-1">
+          <div className="flex gap-4 no-scrollbar overflow-x-auto pb-1">
             {watchlistPreview.map(({ item, progress }) => (
-              <div key={item.id} className="w-32 shrink-0 md:w-40">
+              <div key={item.id} className="w-44 shrink-0 md:w-48">
                 <MediaCard
                   tmdbId={item.media.tmdbId}
                   type={item.media.type}

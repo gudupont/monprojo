@@ -20,3 +20,8 @@ export async function setActiveProfileCookie(profileId: string) {
     maxAge: 60 * 60 * 24 * 365,
   });
 }
+
+export async function clearActiveProfileCookie() {
+  const cookieStore = await cookies();
+  cookieStore.delete(PROFILE_COOKIE);
+}

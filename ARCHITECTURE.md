@@ -35,7 +35,8 @@ Profile 1───* WatchlistItem *───1 Media
 Profile 1───* PlanEntry     *───1 Media
 ```
 
-- **Profile** : `name`, `avatarColor` — un profil = un utilisateur du foyer, isole watchlist/planning.
+- **Profile** : `name` (renommable via `renameProfile`), `avatarColor` — un profil = un utilisateur du foyer, isole watchlist/planning.
+- **ProfileProvider** : lien `(profileId, providerId)` — plateformes de streaming TMDb possédées par un profil, gérées sur `/profiles` (`lib/actions/provider.ts`). Utilisé pour prioriser et mettre en avant visuellement les diffuseurs possédés sur la fiche détail (`WatchProviders`).
 - **Media** : cache local des métadonnées TMDb/OMDb (`tmdbId` unique, `imdbId`, `type: MOVIE|TV`, titre, poster, overview, notes). Rafraîchi si `cachedAt` a plus de 24h (`CACHE_TTL_MS` dans `lib/actions/media.ts`).
 - **WatchlistItem** : lien `(mediaId, profileId)` unique, `status: TO_WATCH|WATCHING|WATCHED`.
 - **PlanEntry** : entrée de calendrier (date planifiée, notes, créée par un profil) — pas de lien direct à un profil "propriétaire unique", visible par tous (calendrier partagé, cf. description app dans layout.tsx).
@@ -61,7 +62,7 @@ Pas d'authentification — le "profil actif" est stocké dans un cookie httpOnly
 | `/watchlist` | `src/app/watchlist/page.tsx` | Liste + filtrage par statut |
 | `/calendar` | `src/app/calendar/page.tsx` | Planning (PlanEntry) |
 | `/media/[type]/[tmdbId]` | `src/app/media/[type]/[tmdbId]/page.tsx` | Fiche détail, ajout watchlist/planning |
-| `/profiles` | `src/app/profiles/page.tsx` | Création/sélection de profil |
+| `/profiles` | `src/app/profiles/page.tsx` | Création/sélection/renommage de profil, réglages (plateformes possédées, Radarr, Sonarr) sur un seul écran, sans repli |
 | `/decide` | — | **Référencé dans `nav-items.tsx` mais route absente** — US-6.x du PRD non implémentées |
 
 ## 7. UI / Design system
@@ -88,3 +89,20 @@ Ces items correspondent aux demandes listées dans `TASKS.md`. La feature "Déci
 `Dockerfile` multi-stage : build (`npm ci` + `prisma generate` + `next build`) puis image runner Alpine minimale, utilisateur non-root (`nextjs`), volume `/app/data` pour le fichier SQLite. `docker-entrypoint.sh` exécute les migrations Prisma avant de démarrer. `docker-compose.yml` fournit un service unique exposant le port 3000 et injecte `TMDB_API_KEY`/`OMDB_API_KEY` depuis l'environnement hôte.
 
 Dev local sans Node installé : `docker-compose.dev.yml` (image Node nue, bind-mount du repo, `next dev` avec polling). CI/CD : `.github/workflows/docker-publish.yml` build et publie l'image sur GHCR (`ghcr.io/gudupont/monprojo`, package privé) à chaque push sur `main`. Déploiement NAS Synology (Container Manager tire l'image depuis GHCR, ou méthode Projet/import manuel en secours) : voir `DEPLOYMENT.md`.
+
+## 10. Scripts ponctuels
+
+- **`scripts/import-tvtime.ts`** — import one-shot de l'historique TVtime (export zip personnel) vers le profil Guillaume. Pas exposé dans l'app (pas de route/action), exécuté manuellement une fois. Détails de conception : `openspec/changes/import-tvtime-history/` (archivé).
+
+  ```bash
+  # 1. Backup obligatoire avant exécution (le script écrit en base via upsert, non destructif mais irréversible en cas d'erreur de matching)
+  cp prisma/dev.db prisma/dev.db.bak-$(date +%Y%m%d%H%M%S)
+
+  # 2. Lancer l'import (TMDB_API_KEY doit être dans .env)
+  npx tsx scripts/import-tvtime.ts /chemin/vers/export-tvtime.zip
+  ```
+
+  - Zip attendu : export officiel TVtime, doit contenir `followed_tv_show.csv`, `user_tv_show_data.csv`, `show_seen_episode_latest.csv`, `seen_episode_source.csv`, `watched_on_episode.csv`, `rewatched_episode.csv`.
+  - Idempotent (upserts Prisma sur les contraintes `@@unique`) — relançable sans dupliquer si interrompu.
+  - Matching TMDb par titre best-effort : séries sans résultat sont skip (listées "unmatched" dans le rapport final), matchs ambigus (titres proches/remakes) à vérifier manuellement dans le rapport stdout après exécution.
+  - Dépendances dédiées (`tsx`, `adm-zip`, `csv-parse`) en devDependencies, sans impact sur le bundle applicatif.

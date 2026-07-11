@@ -64,10 +64,34 @@ model Media {
   genres         String?
   seasonsJson    String?
   watchProvidersJson String?
+  runtimeMinutes Int?
+  episodeRuntimeMinutes Int?
   cachedAt       DateTime        @default(now())
   watchlist      WatchlistItem[]
   planEntries    PlanEntry[]
   episodeWatches EpisodeWatch[]
+  cast           MediaCast[]
+}
+
+model Actor {
+  id          String      @id @default(cuid())
+  tmdbId      Int         @unique
+  name        String
+  profilePath String?
+  mediaCast   MediaCast[]
+}
+
+model MediaCast {
+  id        String @id @default(cuid())
+  mediaId   String
+  actorId   String
+  character String
+  order     Int
+
+  media Media @relation(fields: [mediaId], references: [id])
+  actor Actor @relation(fields: [actorId], references: [id])
+
+  @@unique([mediaId, actorId])
 }
 
 model EpisodeWatch {
@@ -96,11 +120,30 @@ model WatchlistItem {
   profileId String
   status    WatchStatus @default(TO_WATCH)
   addedAt   DateTime    @default(now())
+  watchedAt DateTime?
+  hiddenFromContinue Boolean @default(false)
 
   media   Media   @relation(fields: [mediaId], references: [id])
   profile Profile @relation(fields: [profileId], references: [id])
 
   @@unique([mediaId, profileId])
+}
+
+enum ImportBatchStatus {
+  RUNNING
+  DONE
+  ROLLED_BACK
+}
+
+model ImportBatch {
+  id           String            @id @default(cuid())
+  profileId    String
+  status       ImportBatchStatus @default(RUNNING)
+  reportJson   String?
+  progressJson String?
+  backupPath   String
+  createdAt    DateTime          @default(now())
+  completedAt  DateTime?
 }
 
 model PlanEntry {

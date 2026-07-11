@@ -19,8 +19,12 @@ export function Sidebar({ watchlistCount, profileName, profileColor }: SidebarPr
     <div className="hidden md:flex h-full w-60 shrink-0 flex-col gap-7 border-r border-mp-border p-4">
       <div className="flex items-center gap-2.5">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] bg-mp-accent">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#181004">
-            <path d="M6 4l14 8-14 8z" />
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112">
+            <rect x="26" y="28" width="60" height="40" rx="8" fill="none" stroke="#0A0B0D" strokeWidth="4"></rect>
+            <polygon points="48,40 48,56 64,48" fill="#0A0B0D"></polygon>
+            <line x1="30" y1="82" x2="82" y2="82" stroke="#0A0B0D" strokeWidth="4" strokeOpacity="0.35" strokeLinecap="round"></line>
+            <line x1="30" y1="82" x2="62" y2="82" stroke="#0A0B0D" strokeWidth="4" strokeLinecap="round"></line>
+            <circle cx="62" cy="82" r="5" fill="#0A0B0D"></circle>
           </svg>
         </div>
         <span className="font-heading text-xl italic text-mp-text">MonProjo</span>
@@ -35,6 +39,7 @@ export function Sidebar({ watchlistCount, profileName, profileColor }: SidebarPr
             <Link
               key={href}
               href={href}
+              aria-current={active ? "page" : undefined}
               className={`flex w-full items-center gap-3 rounded-[10px] px-3.5 py-2.5 text-sm ${
                 active ? "bg-mp-surface-2 font-bold text-mp-text" : "font-medium text-mp-text-dim"
               }`}

@@ -136,7 +136,7 @@ export function DecideClient({ candidates }: { candidates: DecideCandidate[] }) 
                   href={`/media/${pick.type}/${pick.tmdbId}`}
                   className="cursor-pointer rounded-full bg-mp-accent px-4.5 py-2.5 text-[13px] font-bold text-mp-accent-ink"
                 >
-                  Regarder maintenant
+                  Voir
                 </Link>
                 <button
                   type="button"

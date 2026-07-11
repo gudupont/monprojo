@@ -1,13 +1,13 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Bookmark, Check } from "lucide-react";
-import { getMediaDetail, getSeasonEpisodes, type TmdbEpisodeSummary } from "@/lib/tmdb";
+import { getMediaDetail } from "@/lib/tmdb";
 import { getOrRefreshMedia } from "@/lib/actions/media";
 import { toggleWatchlist, toggleMovieWatched } from "@/lib/actions/watchlist";
 import { toggleEpisodeWatched } from "@/lib/actions/episode";
 import { getActiveProfile } from "@/lib/session";
 import { db } from "@/lib/db";
-import { parseSeasons, parseGenres, findDefaultSeason } from "@/lib/progress";
+import { parseSeasons, parseGenres, findDefaultSeason, seasonEpisodeNumbers } from "@/lib/progress";
 import { computeProgressPercent } from "@/lib/media-progress";
 import { getProfileProviders } from "@/lib/actions/provider";
 import { getRadarrStatus, checkInRadarr } from "@/lib/actions/radarr";
@@ -15,12 +15,14 @@ import { getSonarrStatus, checkInSonarr } from "@/lib/actions/sonarr";
 import type { TmdbWatchProviders } from "@/lib/tmdb";
 import { Button } from "@/components/ui/button";
 import { PlanDialog } from "@/components/plan-dialog";
+import { CastList } from "@/components/cast-list";
 import { BackLink } from "@/components/back-link";
 import { WatchProviders } from "@/components/watch-providers";
 import { RadarrButton } from "@/components/radarr-button";
 import { SonarrButton } from "@/components/sonarr-button";
 import { SeasonSelect } from "@/components/season-select";
 import { SeasonWatchButton } from "@/components/season-watch-confirm-modal";
+import { MarkSeriesWatchedButton } from "@/components/mark-series-watched-button";
 
 export default async function MediaDetailPage({
   params,
@@ -74,16 +76,9 @@ export default async function MediaDetailPage({
     findDefaultSeason(seasons, watchedCounts) ??
     seasons[0];
 
-  let episodeTitles: TmdbEpisodeSummary[] = [];
-  if (type === "tv" && activeSeason) {
-    try {
-      episodeTitles = await getSeasonEpisodes(tmdbIdNumber, activeSeason.season);
-    } catch {
-      episodeTitles = [];
-    }
-  }
-  const titleByEpisode = new Map(episodeTitles.map((e) => [e.episode, e.title]));
-  const airDateByEpisode = new Map(episodeTitles.map((e) => [e.episode, e.airDate]));
+  const activeSeasonEpisodeNumbers = activeSeason ? seasonEpisodeNumbers(activeSeason) : [];
+  const titleByEpisode = new Map((activeSeason?.episodes ?? []).map((e) => [e.episode, e.title]));
+  const airDateByEpisode = new Map((activeSeason?.episodes ?? []).map((e) => [e.episode, e.airDate]));
 
   function formatAirDate(airDate: string | null | undefined): string {
     if (!airDate) return "N/A";
@@ -91,21 +86,24 @@ export default async function MediaDetailPage({
     return `${day}/${month}/${year}`;
   }
 
+  function isGenericEpisodeTitle(title: string | null | undefined, episode: number): boolean {
+    if (!title) return true;
+    return new RegExp(`^(épisode|episode)\\s+${episode}$`, "i").test(title.trim());
+  }
+
   const seasonWatchedCount = activeSeason
     ? episodeWatches.filter((e) => e.season === activeSeason.season).length
     : 0;
-  const seasonPercent = activeSeason && activeSeason.episodeCount > 0
-    ? Math.round((seasonWatchedCount / activeSeason.episodeCount) * 100)
+  const seasonTotalEpisodes = activeSeasonEpisodeNumbers.length;
+  const seasonPercent = seasonTotalEpisodes > 0
+    ? Math.min(100, Math.round((seasonWatchedCount / seasonTotalEpisodes) * 100))
     : 0;
-  const seasonFullyWatched = activeSeason ? seasonWatchedCount >= activeSeason.episodeCount : false;
+  const seasonFullyWatched = seasonTotalEpisodes > 0 ? seasonWatchedCount >= seasonTotalEpisodes : false;
 
   const previousSeasons = activeSeason ? seasons.filter((s) => s.season < activeSeason.season) : [];
   const previousSeasonsToWatch = previousSeasons
-    .filter((s) => episodeWatches.filter((e) => e.season === s.season).length < s.episodeCount)
-    .map((s) => ({ season: s.season, episodeNumbers: Array.from({ length: s.episodeCount }, (_, i) => i + 1) }));
-  const previousSeasonsToUnwatch = previousSeasons
-    .filter((s) => episodeWatches.some((e) => e.season === s.season))
-    .map((s) => ({ season: s.season }));
+    .filter((s) => episodeWatches.filter((e) => e.season === s.season).length < seasonEpisodeNumbers(s).length)
+    .map((s) => ({ season: s.season, episodeNumbers: seasonEpisodeNumbers(s) }));
 
   const globalPercent =
     type === "tv" && profile
@@ -120,84 +118,123 @@ export default async function MediaDetailPage({
   const alreadyInSonarr =
     hasSonarrConfig && profile ? await checkInSonarr(profile.id, media.tmdbId) : false;
 
+  const badgePills = (
+    <>
+      <span className="rounded-full border border-mp-border px-3 py-1 text-xs font-semibold text-mp-text-dim">
+        {type === "movie" ? "Film" : "Série"}
+      </span>
+      {genres.slice(0, 2).map((g) => (
+        <span key={g} className="rounded-full border border-mp-border px-3 py-1 text-xs font-semibold text-mp-text-dim">
+          {g}
+        </span>
+      ))}
+      {media.releaseDate && (
+        <span className="rounded-full border border-mp-border px-3 py-1 text-xs font-semibold text-mp-text-dim">
+          {media.releaseDate.slice(0, 4)}
+        </span>
+      )}
+      {media.tmdbRating ? (
+        <span className="rounded-full border border-mp-border px-3 py-1 text-xs font-bold text-mp-accent">
+          ★ {media.tmdbRating.toFixed(1)}
+        </span>
+      ) : null}
+    </>
+  );
+
+  const actionButtons = (
+    <div className="flex flex-wrap gap-3">
+      <form action={toggleWatchlist.bind(null, media.id)}>
+        <Button
+          type="submit"
+          variant={watchlistItem ? "default" : "outline"}
+          className="h-11 gap-2 rounded-full"
+        >
+          <Bookmark size={16} />
+          {watchlistItem ? "Dans ma liste" : "Ajouter à ma liste"}
+        </Button>
+      </form>
+      {type === "movie" && (
+        <form action={toggleMovieWatched.bind(null, media.id)}>
+          <Button
+            type="submit"
+            variant={watchlistItem?.status === "WATCHED" ? "secondary" : "outline"}
+            className="h-11 gap-2 rounded-full"
+          >
+            <Check size={16} />
+            {watchlistItem?.status === "WATCHED" ? "Vu" : "Marquer comme vu"}
+          </Button>
+        </form>
+      )}
+      {type === "tv" && profile && (
+        <MarkSeriesWatchedButton mediaId={media.id} watched={watchlistItem?.status === "WATCHED"} />
+      )}
+      <PlanDialog mediaId={media.id} title={media.title} />
+      {hasRadarrConfig && profile && (
+        <RadarrButton profileId={profile.id} tmdbId={media.tmdbId} initiallyPresent={alreadyInRadarr} />
+      )}
+      {hasSonarrConfig && profile && (
+        <SonarrButton profileId={profile.id} tmdbId={media.tmdbId} initiallyPresent={alreadyInSonarr} />
+      )}
+    </div>
+  );
+
   return (
     <div className="px-4 pt-4 pb-10 md:px-10 md:pt-6">
       <BackLink />
 
-      <div className="mt-4 flex flex-wrap gap-7 rounded-[20px] border border-mp-border bg-mp-surface p-6 md:flex-nowrap md:p-10">
-        <div className="relative aspect-[2/3] w-24 shrink-0 overflow-hidden rounded-xl bg-mp-surface-2 md:w-[150px]">
+      {/* Hero mobile : cover en fond, poster + titre en incrustation */}
+      <div className="md:hidden">
+        <div className="relative h-[220px] w-full overflow-hidden rounded-2xl bg-mp-surface-2">
+          {detail.backdrop ? (
+            <Image
+              src={detail.backdrop}
+              alt=""
+              fill
+              priority
+              className="object-cover"
+              sizes="100vw"
+            />
+          ) : null}
+          <div className="absolute inset-0 bg-gradient-to-t from-mp-bg via-mp-bg/55 to-transparent" />
+        </div>
+
+        <div className="relative -mt-16 flex items-center gap-3.5 px-1">
+          <div className="relative aspect-[2/3] w-24 shrink-0 overflow-hidden rounded-xl bg-mp-surface-2 ring-1 ring-mp-border">
+            {media.poster ? (
+              <Image src={media.poster} alt={media.title} fill className="object-cover" sizes="96px" />
+            ) : null}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="font-heading text-[26px] leading-tight text-mp-text">{media.title}</h1>
+            <div className="mt-2 flex flex-wrap gap-2">{badgePills}</div>
+          </div>
+        </div>
+
+        <p className="mt-4 text-[15px] leading-relaxed text-mp-text-dim">{media.overview}</p>
+        <div className="mt-4">{actionButtons}</div>
+      </div>
+
+      {/* Panneau desktop */}
+      <div className="mt-4 hidden items-start gap-7 rounded-[20px] border border-mp-border bg-mp-surface p-10 md:flex">
+        <div className="relative aspect-[2/3] w-[150px] shrink-0 overflow-hidden rounded-xl bg-mp-surface-2">
           {media.poster ? (
-            <Image src={media.poster} alt={media.title} fill className="object-cover" sizes="150px" />
+            <Image src={media.poster} alt={media.title} fill priority className="object-cover" sizes="150px" />
           ) : null}
         </div>
 
         <div>
-          <h1 className="mb-2 font-heading text-[28px] text-mp-text md:text-[38px]">{media.title}</h1>
-          <div className="mb-3.5 flex flex-wrap gap-2.5">
-            <span className="rounded-full border border-mp-border px-3 py-1 text-xs font-semibold text-mp-text-dim">
-              {type === "movie" ? "Film" : "Série"}
-            </span>
-            {genres.slice(0, 2).map((g) => (
-              <span key={g} className="rounded-full border border-mp-border px-3 py-1 text-xs font-semibold text-mp-text-dim">
-                {g}
-              </span>
-            ))}
-            {media.releaseDate && (
-              <span className="rounded-full border border-mp-border px-3 py-1 text-xs font-semibold text-mp-text-dim">
-                {media.releaseDate.slice(0, 4)}
-              </span>
-            )}
-            {media.tmdbRating ? (
-              <span className="rounded-full border border-mp-border px-3 py-1 text-xs font-bold text-mp-accent">
-                ★ {media.tmdbRating.toFixed(1)}
-              </span>
-            ) : null}
-          </div>
+          <h1 className="mb-2 font-heading text-[38px] text-mp-text">{media.title}</h1>
+          <div className="mb-3.5 flex flex-wrap gap-2.5">{badgePills}</div>
           <p className="mb-4.5 max-w-xl text-[15px] leading-relaxed text-mp-text-dim">{media.overview}</p>
-
-          <div className="flex flex-wrap gap-3">
-            <form action={toggleWatchlist.bind(null, media.id)}>
-              <Button
-                type="submit"
-                variant={watchlistItem ? "default" : "outline"}
-                className="gap-2 rounded-full"
-              >
-                <Bookmark size={16} />
-                {watchlistItem ? "Dans ma liste" : "Ajouter à ma liste"}
-              </Button>
-            </form>
-            {type === "movie" && (
-              <form action={toggleMovieWatched.bind(null, media.id)}>
-                <Button
-                  type="submit"
-                  variant={watchlistItem?.status === "WATCHED" ? "default" : "secondary"}
-                  className="gap-2 rounded-full"
-                >
-                  <Check size={16} />
-                  {watchlistItem?.status === "WATCHED" ? "Vu" : "Marquer comme vu"}
-                </Button>
-              </form>
-            )}
-            <PlanDialog mediaId={media.id} title={media.title} />
-            {hasRadarrConfig && profile && (
-              <RadarrButton
-                profileId={profile.id}
-                tmdbId={media.tmdbId}
-                initiallyPresent={alreadyInRadarr}
-              />
-            )}
-            {hasSonarrConfig && profile && (
-              <SonarrButton
-                profileId={profile.id}
-                tmdbId={media.tmdbId}
-                initiallyPresent={alreadyInSonarr}
-              />
-            )}
-          </div>
+          {actionButtons}
         </div>
       </div>
 
-      <WatchProviders link={watchProviders.link} providers={sortedProviders} />
+      <WatchProviders
+        link={watchProviders.link}
+        providers={sortedProviders}
+        ownedProviderIds={ownedProviderIds}
+      />
 
       {type === "tv" && seasons.length === 0 && (
         <div className="mt-8 rounded-xl border border-mp-border bg-mp-surface p-6 text-sm text-mp-text-dim">
@@ -207,6 +244,7 @@ export default async function MediaDetailPage({
 
       {type === "tv" && seasons.length > 0 && activeSeason && (
         <div className="mt-8">
+          <h2 className="mb-3 font-heading text-2xl text-mp-text">Épisodes</h2>
           {globalPercent !== null && (
             <div className="mb-4 flex items-center gap-3">
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-mp-surface-2">
@@ -232,24 +270,25 @@ export default async function MediaDetailPage({
                 mediaId={media.id}
                 season={activeSeason.season}
                 direction="unwatch"
-                episodeNumbers={Array.from({ length: activeSeason.episodeCount }, (_, i) => i + 1)}
-                previousSeasons={previousSeasonsToUnwatch}
+                episodeNumbers={activeSeasonEpisodeNumbers}
+                previousSeasons={[]}
               />
             ) : (
               <SeasonWatchButton
                 mediaId={media.id}
                 season={activeSeason.season}
                 direction="watch"
-                episodeNumbers={Array.from({ length: activeSeason.episodeCount }, (_, i) => i + 1)}
+                episodeNumbers={activeSeasonEpisodeNumbers}
                 previousSeasons={previousSeasonsToWatch}
               />
             )}
           </div>
 
           <div className="flex flex-col gap-2.5">
-            {Array.from({ length: activeSeason.episodeCount }, (_, i) => i + 1).map((ep) => {
+            {activeSeasonEpisodeNumbers.map((ep) => {
               const watched = watchedSet.has(`${activeSeason.season}-${ep}`);
-              const title = titleByEpisode.get(ep);
+              const rawTitle = titleByEpisode.get(ep);
+              const title = isGenericEpisodeTitle(rawTitle, ep) ? null : rawTitle;
               return (
                 <form key={ep} action={toggleEpisodeWatched.bind(null, media.id, activeSeason.season, ep)}>
                   <button
@@ -285,7 +324,7 @@ export default async function MediaDetailPage({
       {detail.cast.length > 0 && (
         <div className="mt-9">
           <h2 className="mb-3 font-heading text-2xl text-mp-text">Distribution</h2>
-          <p className="max-w-xl text-[15px] leading-relaxed text-mp-text-dim">{detail.cast.join(" · ")}</p>
+          <CastList cast={detail.cast} mediaId={media.id} />
         </div>
       )}
     </div>

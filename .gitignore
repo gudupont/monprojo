@@ -44,6 +44,7 @@ Thumbs.db
 .idea/
 .vscode/
 .playwright-mcp/
+.impeccable/critique
 TASKS.md
 
 # Playwright
@@ -52,3 +53,5 @@ TASKS.md
 /playwright/.cache/
 
 /src/generated/prisma
+
+/import/

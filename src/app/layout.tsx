@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import { getActiveProfile } from "@/lib/session";
@@ -24,6 +24,18 @@ const bricolageGrotesque = Bricolage_Grotesque({
 export const metadata: Metadata = {
   title: "Monprojo",
   description: "Films et séries à voir en famille, planifiés dans un calendrier partagé",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/icons/icon-192.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0A0B0D",
 };
 
 export default async function RootLayout({
@@ -40,9 +52,9 @@ export default async function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${instrumentSerif.variable} ${bricolageGrotesque.variable} h-full antialiased`}
+      className={`${instrumentSerif.variable} ${bricolageGrotesque.variable} h-full overflow-hidden antialiased`}
     >
-      <body className="min-h-full bg-mp-bg text-mp-text">
+      <body className="h-full overflow-hidden bg-mp-bg text-mp-text">
         <BfcacheRefresh />
         {profile ? (
           <div className="flex h-screen w-full flex-col md:flex-row">
@@ -52,13 +64,13 @@ export default async function RootLayout({
               profileName={profile.name}
               profileColor={profile.avatarColor}
             />
-            <main className="flex-1 overflow-y-auto pt-0 pb-[90px] md:pb-0 md:pt-8">
+            <main className="flex-1 overflow-y-auto pt-0 pb-[90px] md:pt-8 md:pb-8">
               {children}
             </main>
             <MobileBottomNav />
           </div>
         ) : (
-          <main className="flex min-h-full items-center justify-center px-4 py-6">{children}</main>
+          <main className="flex h-full items-center justify-center overflow-y-auto px-4 py-6">{children}</main>
         )}
       </body>
     </html>

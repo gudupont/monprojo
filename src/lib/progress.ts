@@ -37,3 +37,21 @@ export function findDefaultSeason(
 export function parseGenres(genres: string | null): string[] {
   return genres ? genres.split(",").filter(Boolean) : [];
 }
+
+export function seasonEpisodeNumbers(season: SeasonSummary): number[] {
+  if (season.episodes && season.episodes.length > 0) {
+    return season.episodes.map((e) => e.episode);
+  }
+  return Array.from({ length: season.episodeCount }, (_, i) => i + 1);
+}
+
+export function selectReleasedEpisodes(
+  seasons: SeasonSummary[],
+  today: string,
+): { season: number; episode: number }[] {
+  return seasons.flatMap((season) =>
+    (season.episodes ?? [])
+      .filter((episode) => episode.airDate !== null && episode.airDate <= today)
+      .map((episode) => ({ season: season.season, episode: episode.episode })),
+  );
+}
