@@ -20,12 +20,11 @@ interface Suggestion {
 type AddState = "idle" | "loading" | "added" | "already-added" | "error";
 
 interface SearchAutocompleteProps {
-  variant?: "page" | "header";
   initialQuery?: string;
   initialType?: string;
 }
 
-export function SearchAutocomplete({ variant = "page", initialQuery = "", initialType }: SearchAutocompleteProps) {
+export function SearchAutocomplete({ initialQuery = "", initialType }: SearchAutocompleteProps) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -170,7 +169,7 @@ export function SearchAutocomplete({ variant = "page", initialQuery = "", initia
             focusedRef.current = false;
           }}
           onKeyDown={handleKeyDown}
-          placeholder={variant === "header" ? "Rechercher…" : "Un titre, une série…"}
+          placeholder="Rechercher…"
           aria-label="Recherche"
           className="flex-1 bg-transparent text-[15px] font-medium text-mp-text outline-none placeholder:text-mp-text-dim"
         />

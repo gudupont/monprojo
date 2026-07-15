@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS, isSearchVisible } from "@/components/layout/nav-items";
+import { NAV_ITEMS } from "@/components/layout/nav-items";
 import { ProfileMenu } from "@/components/layout/profile-menu";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
 
@@ -31,7 +31,7 @@ export function Sidebar({ watchlistCount, profileName, profileColor }: SidebarPr
         <span className="font-heading text-xl italic text-mp-text">MonProjo</span>
       </div>
 
-      {isSearchVisible(pathname) && <SearchAutocomplete variant="header" />}
+      <SearchAutocomplete />
 
       <nav className="flex flex-col gap-1">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {

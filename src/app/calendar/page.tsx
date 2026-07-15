@@ -4,6 +4,7 @@ import { getActiveProfile } from "@/lib/session";
 import { CalendarSubscription } from "@/components/calendar-subscription";
 import { CalendarDayHeader, CalendarItem } from "@/components/calendar-item";
 import { RemovePlanButton } from "@/components/remove-plan-button";
+import { ReschedulePlanButton } from "@/components/reschedule-plan-button";
 import type { Media, Profile } from "@prisma/client";
 
 interface PlanRow {
@@ -103,7 +104,16 @@ export default async function CalendarPage() {
                   ) : undefined
                 }
                 actions={
-                  row.kind === "plan" ? <RemovePlanButton entryId={row.id} /> : undefined
+                  row.kind === "plan" ? (
+                    <div className="flex items-center gap-1">
+                      <ReschedulePlanButton
+                        entryId={row.id}
+                        title={row.media.title}
+                        scheduledAt={row.date}
+                      />
+                      <RemovePlanButton entryId={row.id} />
+                    </div>
+                  ) : undefined
                 }
               />
             ))}

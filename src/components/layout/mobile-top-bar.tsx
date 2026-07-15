@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { ProfileMenu } from "@/components/layout/profile-menu";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
-import { isSearchVisible } from "@/components/layout/nav-items";
 
 interface MobileTopBarProps {
   profileName: string;
@@ -17,7 +15,6 @@ export function MobileTopBar({ profileName, profileColor }: MobileTopBarProps) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const searchVisible = isSearchVisible(pathname);
 
   useEffect(() => {
     setSearchOpen(false);
@@ -58,32 +55,22 @@ export function MobileTopBar({ profileName, profileColor }: MobileTopBarProps) {
           <span className="font-heading text-xl italic text-mp-text">MonProjo</span>
         </div>
         <div className="flex items-center gap-1">
-          {searchVisible ? (
-            <button
-              type="button"
-              onClick={() => setSearchOpen((prev) => !prev)}
-              aria-label={searchOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
-              aria-expanded={searchOpen}
-              className="flex h-11 w-11 shrink-0 items-center justify-center text-mp-text"
-            >
-              {searchOpen ? <X size={20} strokeWidth={1.8} /> : <Search size={20} strokeWidth={1.8} />}
-            </button>
-          ) : (
-            <Link
-              href="/search"
-              aria-label="Recherche"
-              className="flex h-11 w-11 shrink-0 items-center justify-center text-mp-text"
-            >
-              <Search size={20} strokeWidth={1.8} />
-            </Link>
-          )}
+          <button
+            type="button"
+            onClick={() => setSearchOpen((prev) => !prev)}
+            aria-label={searchOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
+            aria-expanded={searchOpen}
+            className="flex h-11 w-11 shrink-0 items-center justify-center text-mp-text"
+          >
+            {searchOpen ? <X size={20} strokeWidth={1.8} /> : <Search size={20} strokeWidth={1.8} />}
+          </button>
           <ProfileMenu profileName={profileName} profileColor={profileColor} avatarClassName="h-7 w-7" />
         </div>
       </div>
 
-      {searchOpen && searchVisible && (
+      {searchOpen && (
         <div className="w-full border-b border-mp-border bg-mp-bg px-4 py-3">
-          <SearchAutocomplete variant="header" />
+          <SearchAutocomplete />
         </div>
       )}
     </div>

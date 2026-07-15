@@ -6,6 +6,7 @@ import { computeProgressPercent } from "@/lib/media-progress";
 import { hideFromContinueWatching } from "@/lib/actions/watchlist";
 import { MediaCard } from "@/components/media-card";
 import { CalendarItem } from "@/components/calendar-item";
+import { ReschedulePlanButton } from "@/components/reschedule-plan-button";
 
 const MONTHS_ABBR = [
   "janv.",
@@ -137,7 +138,19 @@ export default async function Home() {
         ) : (
           <div className="flex flex-col gap-2.5">
             {upcomingEntries.map((entry) => (
-              <CalendarItem key={entry.id} date={entry.scheduledAt} media={entry.media} variant="plan" />
+              <CalendarItem
+                key={entry.id}
+                date={entry.scheduledAt}
+                media={entry.media}
+                variant="plan"
+                actions={
+                  <ReschedulePlanButton
+                    entryId={entry.id}
+                    title={entry.media.title}
+                    scheduledAt={entry.scheduledAt}
+                  />
+                }
+              />
             ))}
           </div>
         )}

@@ -9,8 +9,3 @@ export const NAV_ITEMS = [
   { href: "/stats", label: "Statistiques", icon: BarChart3 },
 ] as const;
 
-export const SEARCH_HIDDEN_PATHS = ["/search"] as const;
-
-export function isSearchVisible(pathname: string): boolean {
-  return !SEARCH_HIDDEN_PATHS.includes(pathname as (typeof SEARCH_HIDDEN_PATHS)[number]);
-}

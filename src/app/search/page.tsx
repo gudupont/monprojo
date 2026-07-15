@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { searchMedia } from "@/lib/tmdb";
 import { MediaCard } from "@/components/media-card";
-import { SearchAutocomplete } from "@/components/search-autocomplete";
+import { SearchPageInput } from "@/components/search-page-input";
 import { QuickAddActions } from "@/components/quick-add-actions";
 import { getActiveProfile } from "@/lib/session";
 import { db } from "@/lib/db";
@@ -43,11 +43,7 @@ export default async function SearchPage({
     <div className="px-4 pt-5 md:px-10 md:pt-0">
       <div className="mb-4 md:mb-6">
         <h1 className="mb-5 font-heading text-[30px] text-mp-text md:text-[38px]">Recherche</h1>
-        <SearchAutocomplete
-          variant="page"
-          initialQuery={q}
-          initialType={activeType}
-        />
+        <SearchPageInput initialQuery={q} initialType={activeType} />
       </div>
 
       <div className="mb-6 flex gap-2">

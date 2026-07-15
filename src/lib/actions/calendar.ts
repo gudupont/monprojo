@@ -72,6 +72,34 @@ export async function deletePlanEntry(entryId: string) {
   revalidatePath("/calendar");
 }
 
+export async function reschedulePlanEntry(
+  entryId: string,
+  newDate: string,
+): Promise<{ error: string } | { success: true }> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
+    return { error: "Date invalide" };
+  }
+
+  const scheduledAt = new Date(`${newDate}T00:00:00`);
+  if (Number.isNaN(scheduledAt.getTime())) {
+    return { error: "Date invalide" };
+  }
+
+  const today = new Date(new Date().setHours(0, 0, 0, 0));
+  if (scheduledAt <= today) {
+    return { error: "La date doit être strictement postérieure à aujourd'hui" };
+  }
+
+  await db.planEntry.update({
+    where: { id: entryId },
+    data: { scheduledAt },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/calendar");
+  return { success: true };
+}
+
 export async function getOrCreateCalendarToken(): Promise<string> {
   const profile = await getActiveProfile();
   if (!profile) throw new Error("Aucun profil actif");
