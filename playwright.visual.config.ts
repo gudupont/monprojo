@@ -24,6 +24,7 @@ export default defineConfig({
     timeout: 60_000,
     env: {
       TMDB_BASE_URL: `http://127.0.0.1:${MOCK_TMDB_PORT}/3`,
+      PLAYWRIGHT_VISUAL: "1",
     },
   },
 });

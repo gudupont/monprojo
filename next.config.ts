@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
         hostname: "image.tmdb.org",
       },
     ],
+    unoptimized: process.env.PLAYWRIGHT_VISUAL === "1",
   },
 };
 
