@@ -2,7 +2,14 @@ import type { PrismaClient } from "@prisma/client";
 
 const TEST_TMDB_ID = 999000001;
 
+// Le mock TMDb (mock-tmdb-server.ts) renvoie toujours un payload de recherche, pas un
+// payload de détail — inoffensif car ce fixture est disposable : getOrRefreshMedia ne va
+// jamais chercher de données fraîches (le média est déjà en cache avant chaque test).
 export async function createVisualMedia(db: PrismaClient) {
+  // Auto-guérison : si un run précédent a crashé avant son afterAll, la ligne
+  // avec ce tmdbId (@unique) peut encore exister et ferait échouer le create
+  // suivant (Prisma P2002). On la supprime d'abord si présente.
+  await db.media.deleteMany({ where: { tmdbId: TEST_TMDB_ID } });
   return db.media.create({
     data: {
       tmdbId: TEST_TMDB_ID,

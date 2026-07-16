@@ -15,6 +15,14 @@ test.describe("Profil - régression visuelle", () => {
   let createdSecondary = false;
 
   test.beforeAll(async () => {
+    // Auto-guérison : si un run précédent a crashé avant son afterAll, un profil
+    // "Visual QA — Profile secondaire" orphelin peut traîner en base. On le
+    // supprime d'abord pour ne pas fausser la logique "réutiliser le 2e profil".
+    const stale = await db.profile.findMany({ where: { name: "Visual QA — Profile secondaire" } });
+    for (const s of stale) {
+      await deleteVisualProfile(db, s.id);
+    }
+
     const profiles = await db.profile.findMany({ orderBy: { createdAt: "asc" } });
     if (profiles.length === 0) {
       throw new Error("Fixture manquante : aucun profil en base");

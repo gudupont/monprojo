@@ -2,6 +2,7 @@ import http from "node:http";
 
 export const MOCK_TMDB_PORT = 4599;
 
+// Mock recherche uniquement — si un futur test a besoin d'un endpoint /tv/{id} ou /find, router par chemin ici.
 const SEARCH_MULTI_RESPONSE = {
   results: [
     {

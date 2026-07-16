@@ -22,7 +22,7 @@ Capturer des captures de référence (baselines) pour 5 surfaces clés (Watchlis
 Nouveau fichier `playwright.visual.config.ts` à la racine, séparé de `playwright.config.ts` (qui reste dédié à `./e2e` et n'est pas modifié) :
 - `testDir: "./tests/visual"`
 - `snapshotDir: "./tests/visual/__screenshots__"` — baselines committées en git
-- Réutilise `webServer` (`npx next dev -p 3000`, `reuseExistingServer: true`) et `baseURL: "http://localhost:3000"` du config existant
+- Port dédié : `webServer` (`npx next dev -p 3100`, `reuseExistingServer: false`) et `baseURL: "http://localhost:3100"` — port distinct du serveur dev habituel (3000) pour ne pas interférer avec une session de dev en cours, et démarré/arrêté par Playwright à chaque run
 - `expect: { toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: "disabled" } }`
 - `fullyParallel: false`, `workers: 1` (comme le config e2e existant, pour éviter les conflits sur la DB partagée)
 
@@ -33,7 +33,8 @@ tests/visual/
   fixtures/
     auth.ts                    # loginAs(context, profileId) — cookie JWT injecté
     viewports.ts               # MOBILE/TABLET/DESKTOP {width,height}
-    search-results.mock.json   # payload TMDb figé pour /search
+    mock-tmdb-server.ts        # serveur HTTP local (payload de recherche figé) démarré via globalSetup
+  global-setup.ts              # démarre le mock TMDb avant la suite
   watchlist.visual.spec.ts
   detail.visual.spec.ts
   calendar.visual.spec.ts
@@ -50,7 +51,7 @@ tests/visual/
 | Détail | `/media/tv/1396` | media seedé, session+profil | full-page @375/768/1280 ; hover bouton d'action principal @768+1280 ; focus bouton |
 | Calendrier | `/calendar` | `planEntry` seedées à des offsets relatifs à "aujourd'hui" (+0j, +3j), recalculés à chaque exécution | full-page @375/768/1280, avec `mask` Playwright sur les libellés de date (seule zone légitimement variable jour après jour) |
 | Profil | `/profiles` | profil actif + un profil inactif | full-page @375/768/1280 ; hover avatar inactif ; focus (Tab) avatar |
-| Recherche | `/search?q=matrix` | mock réseau `page.route("**://api.themoviedb.org/**")` → fixture JSON figée (2-3 titres, posters TMDb réels donc URLs stables) | full-page @375/768/1280 ; hover 1ère carte @768+1280 ; focus 1ère carte |
+| Recherche | `/search?q=matrix` | mock réseau : la recherche TMDb s'exécute côté serveur (Server Component/action), pas dans le navigateur, donc `page.route()` ne peut pas l'intercepter ; à la place, un serveur HTTP local (`tests/visual/fixtures/mock-tmdb-server.ts`) sert un payload de recherche figé, et `TMDB_BASE_URL` (env du `webServer` Playwright) redirige les appels serveur vers ce mock | full-page @375/768/1280 ; hover 1ère carte @768+1280 ; focus 1ère carte |
 
 Viewports : mobile 375×812, tablette 768×1024, desktop 1280×800.
 
@@ -61,12 +62,12 @@ Hover uniquement capturé @768 et @1280 : les actions de carte (`hoverActions` d
 - `tests/visual/fixtures/auth.ts` exporte `loginAs(context, profileId)` : signe un JWT HS256 avec `SESSION_SECRET`, injecte les cookies `monprojo_session` + `monprojo_profile_id` via `context.addCookies`. Repris tel quel du pattern `e2e/season-watch-cascade.spec.ts`. Ce canal CLI n'est pas soumis à la règle "vrai formulaire `/login`" du CLAUDE.md, qui cible la vérification manuelle MCP.
 - Chaque spec gère son propre `beforeAll`/`afterAll` Prisma (`PrismaClient` direct, comme l'existant) pour garantir un état DB connu, et nettoie après exécution.
 - Calendrier : les dates de `planEntry` sont calculées `new Date() + Nj` au moment de l'exécution du test — jamais de date en dur — pour garder une structure stable (nombre de cartes, regroupement par jour). Seul le texte affiché de la date change d'un jour à l'autre ; c'est la zone couverte par `mask`.
-- Recherche : le mock réseau élimine la dépendance à `TMDB_API_KEY` et à la disponibilité réseau en CI.
+- Recherche : le mock serveur (`mock-tmdb-server.ts` + `TMDB_BASE_URL`) élimine la dépendance à `TMDB_API_KEY` et à la disponibilité réseau en CI ; démarré une fois via `globalSetup` pour toute la suite.
 
 ## `/verify-visual`
 
 Nouveau `.claude/skills/verify-visual/SKILL.md` :
-1. Vérifie que `npm run dev` tourne sur le port 3000 ; le démarre en tâche de fond sinon.
+1. Lance `playwright.visual.config.ts`, qui démarre lui-même `next dev -p 3100` (port dédié, `reuseExistingServer: false`) et le mock TMDb (`global-setup.ts`) — pas de dépendance à un `npm run dev` déjà lancé sur le port 3000.
 2. Lance `npx playwright test --config=playwright.visual.config.ts`.
 3. Pas de baseline existante pour un screenshot → Playwright échoue explicitement (jamais d'acceptation silencieuse ; pas de `--update-snapshots` implicite).
 4. Sur échec, Playwright génère nativement à côté de chaque baseline : `*-expected.png`, `*-actual.png`, `*-diff.png`, plus un rapport HTML consultable via `npx playwright show-report` (vue côte-à-côte intégrée).

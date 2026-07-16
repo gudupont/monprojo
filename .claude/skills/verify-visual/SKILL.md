@@ -16,3 +16,5 @@ description: Recapture toutes les surfaces de régression visuelle (Watchlist, D
    - Indique la commande de consultation : `npx playwright show-report` (rapport HTML, vue côte-à-côte intégrée).
 4. Mise à jour intentionnelle des baselines (uniquement si le changement visuel est voulu, jamais automatique) :
    `npm run test:visual:update`
+
+**Limite connue** : `maxDiffPixelRatio: 0.01` est calculé sur la page entière. Une régression de couleur cantonnée à un petit élément (ex. un swap de couleur d'accent sur un badge ou bouton fin) peut ne pas dépasser fiablement ce seuil. C'est un compromis assumé qui privilégie la détection des régressions de layout/rendu plutôt qu'une correspondance pixel-parfaite des couleurs.
