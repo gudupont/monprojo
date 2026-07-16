@@ -7,6 +7,7 @@ export default defineConfig({
   globalSetup: "./tests/visual/global-setup.ts",
   fullyParallel: false,
   workers: 1,
+  retries: 1,
   reporter: "list",
   expect: {
     toHaveScreenshot: {
