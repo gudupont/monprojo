@@ -29,7 +29,7 @@ export function QuickAddActions({
   const [state, setState] = useState<WatchlistButtonState>(initialInWatchlist ? "added" : "idle");
 
   return (
-    <div className="flex gap-1.5">
+    <div className="flex flex-col gap-1.5 md:flex-row">
       <button
         type="button"
         disabled={isPending || state === "added"}

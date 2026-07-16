@@ -14,6 +14,7 @@ MonProjo est un outil de planification et de suivi de visionnage de séries et d
 Pour l'architecture détaillée (modèle de données, flux TMDb/OMDb, routes, écart spec/code), voir `ARCHITECTURE.md`. Pour les user stories et leur état d'implémentation, voir `PRD.md`. Les deux sont à tenir à jour à chaque feature significative.
 
 # Règles de Développement & IA
+Follow the OpenSpec workflow: /opsx:propose to generate proposal/design/specs/tasks, /opsx:apply to implement all tasks, /opsx:archive to sync delta specs and update the graph. Always sync delta specs into their capability spec when archiving.
 Ce projet utilise une approche stricte basée sur deux frameworks pour l'assistance IA :
 
 1. **OpenSpec (Spec-Driven Development)**
@@ -41,14 +42,19 @@ Lors de l'assistance sur ce projet, l'IA doit configurer son comportement autour
   * **Thème Visuel :** Mode sombre par défaut (Fond : `#0A0B0D`, Surfaces : `#15171B` / `#1C1F24`, Bordures : `#262A31`).
   * **Couleurs d'accentuation :** Principalement `#E8A33D` (avec variations de profils : `#E5484D`, `#3FA3A0`, `#3E6FBF`, `#C9668A`, `#7C5CBF`).
   * **Responsive Design :** Layout adaptatif avec barre latérale (Desktop) et navigation inférieure (Mobile).
+* For UI card/thumbnail work, match the existing watchlist 2:3 aspect ratio and app design tokens; do not introduce horizontal scrollbars or square thumbnails unless explicitly requested.
 
 ### 3. Mémoire et Continuité
 * **Skill :** [Graphify](https://graphify.net)
 * **Rôle :** Maintenir le contexte architectural du projet sur le long terme. Cartographier les flux de navigation (Accueil, Ma liste, Recherche, Calendrier, Décider) et documenter les décisions techniques au fil des itérations.
 
+## Working Environment section in CLAUDE.md
+When editing files, watch for concurrent parallel Claude processes editing the same files, and flag the user if edits appear to revert; avoid running competing processes on the same working tree.
+
 ## Tests Automatisés
 ### Outil : MCP Playwright (obligatoire)
 * **Règle stricte :** Tout test manuel ou de vérification (feature terminée, bugfix, régression) DOIT passer par les outils `mcp__plugin_playwright_playwright__*` (navigate, snapshot, click, type, fill_form, evaluate, console_messages, network_requests, take_screenshot...). N'utilise PAS de scripts `curl`, de `fetch` Node ad hoc, ni un autre navigateur/outil pour vérifier le comportement de l'UI.
+Always verify UI changes with Playwright against the live app before declaring a task complete; capture snapshots across mobile and desktop viewports.
 * **Avant de tester :** lancer le serveur dev (`npm run dev`, port 3000) si non déjà démarré, puis `browser_navigate` vers `http://localhost:3000`.
 * **Authentification :** passer par le formulaire réel sur `/login` (voir `src/app/login`, `src/app/api/auth/login`) via `browser_fill_form` / `browser_click` — ne pas injecter de cookie de session à la main sauf si le test l'exige explicitement.
 * **Voir aussi :** skill projet `.claude/skills/test-playwright-mcp/SKILL.md` pour le déroulé détaillé (démarrage serveur, login, snapshot avant clic, vérification console/réseau).
@@ -72,6 +78,10 @@ Lors de l'assistance sur ce projet, l'IA doit configurer son comportement autour
 - NEVER add a `Co-Authored-By` trailer to user commits unless this project's `.claude/settings.json` has `attribution.commit` set (#2078). The Claude Code Bash tool may suggest one in its default commit-message template — ignore it. `Co-Authored-By` is semantic authorship attribution under git/GitHub convention; the tool is the facilitator, not a co-author.
 - Keep files under 500 lines
 - Validate input at system boundaries
+- Add under a ## Verification section in CLAUDE.md\n\n
+- Add under a ## UI & Design Conventions section in CLAUDE.md\n\n
+- Add under a ## OpenSpec Workflow section in CLAUDE.md\n\n
+- Add under a 
 
 ## graphify
 

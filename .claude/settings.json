@@ -14,5 +14,9 @@
   },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  }
+  },
+  "PostToolUse": [{
+    "matcher": "Edit|Write",
+    "hooks": [{"type": "command", "command": "npm run lint --silent && npx tsc --noEmit"}]
+  }]
 }
