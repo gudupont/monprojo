@@ -43,20 +43,22 @@ test.describe("Calendrier - régression visuelle", () => {
   });
 
   test.afterAll(async () => {
-    await db.planEntry.deleteMany({ where: { createdByProfileId: profileId } });
-    if (existingPlanEntries.length > 0) {
-      await db.planEntry.createMany({
-        data: existingPlanEntries.map((entry) => ({
-          id: entry.id,
-          mediaId: entry.mediaId,
-          scheduledAt: entry.scheduledAt,
-          createdByProfileId: entry.createdByProfileId,
-          notes: entry.notes,
-          createdAt: entry.createdAt,
-        })),
-      });
+    if (profileId) {
+      await db.planEntry.deleteMany({ where: { createdByProfileId: profileId } });
+      if (existingPlanEntries.length > 0) {
+        await db.planEntry.createMany({
+          data: existingPlanEntries.map((entry) => ({
+            id: entry.id,
+            mediaId: entry.mediaId,
+            scheduledAt: entry.scheduledAt,
+            createdByProfileId: entry.createdByProfileId,
+            notes: entry.notes,
+            createdAt: entry.createdAt,
+          })),
+        });
+      }
+      await deleteVisualProfile(db, profileId);
     }
-    await deleteVisualProfile(db, profileId);
     await db.$disconnect();
   });
 

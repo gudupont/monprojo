@@ -22,7 +22,8 @@ export async function createVisualMedia(db: PrismaClient) {
   });
 }
 
-export async function deleteVisualMedia(db: PrismaClient, mediaId: string): Promise<void> {
+export async function deleteVisualMedia(db: PrismaClient, mediaId: string | undefined): Promise<void> {
+  if (!mediaId) return;
   await db.episodeWatch.deleteMany({ where: { mediaId } });
   await db.watchlistItem.deleteMany({ where: { mediaId } });
   await db.planEntry.deleteMany({ where: { mediaId } });

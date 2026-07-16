@@ -6,7 +6,8 @@ export async function createVisualProfile(db: PrismaClient, label: string) {
   });
 }
 
-export async function deleteVisualProfile(db: PrismaClient, profileId: string): Promise<void> {
+export async function deleteVisualProfile(db: PrismaClient, profileId: string | undefined): Promise<void> {
+  if (!profileId) return;
   await db.episodeWatch.deleteMany({ where: { profileId } });
   await db.watchlistItem.deleteMany({ where: { profileId } });
   await db.planEntry.deleteMany({ where: { createdByProfileId: profileId } });
